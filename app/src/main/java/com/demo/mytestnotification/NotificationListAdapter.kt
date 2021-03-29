@@ -52,10 +52,10 @@ class CustomAdapter(dataList: ArrayList<NotificationData>) : RecyclerView.Adapte
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
 
         val notifItem = dataSet[position]
-        viewHolder.id.text = "nitif_id:"+notifItem.id.toString() +", [group: ${notifItem.groupId}, channelId: ${notifItem.channelId}]"
+        viewHolder.id.text = "id:"+notifItem.id.toString() +", [group: ${notifItem.groupId}, channelId: ${notifItem.channelId}]"
         viewHolder.title.text = notifItem.title
         viewHolder.body.text = notifItem.body
-        viewHolder.time.text = notifItem.time.toString()
+        viewHolder.time.text = "post at:"+ notifItem.time.toString()
 
         updateChannleBk(viewHolder, notifItem)
 

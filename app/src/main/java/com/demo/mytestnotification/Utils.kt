@@ -7,9 +7,13 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.provider.Settings
 import android.service.notification.StatusBarNotification
 import android.util.Log
+import androidx.core.app.NotificationCompat.EXTRA_TEXT
+import androidx.core.app.NotificationCompat.EXTRA_TITLE
 import androidx.core.app.NotificationManagerCompat
 import java.util.*
 import kotlin.Comparator
@@ -17,18 +21,25 @@ import kotlin.Comparator
 
 object Utils {
     val CHANNEL_ID_1 = "Channel_1"
-    val maxNoticicationAllowd = 5 //TODO
+    var maxActiveNoticicationAllowd = 5
     lateinit var appContext: Context
     lateinit var packageName: String
 
-    fun getActiveNotification(): ArrayList<NotificationData> {
+    enum class ThrottleStrategy {
+        NONE,
+        PURGE_LAST,
+        REPLACE_LAST
+    }
+
+    fun getActiveNotification(): Pair<ArrayList<NotificationData>, MutableList<StatusBarNotification>> {
 
         var activeotificationDataList = arrayListOf<NotificationData>()
+        var toBeSorted: MutableList<StatusBarNotification> = mutableListOf()
 
         val notificationManagerCompat: NotificationManagerCompat = NotificationManagerCompat.from(appContext)
         if (!notificationManagerCompat.areNotificationsEnabled()) {
             opnNotificationSettings(appContext, packageName)
-            return activeotificationDataList
+            return Pair(activeotificationDataList, toBeSorted)
         }
         //todo: look at NotificationListenerService::getActiveNotifications()  api 18  (that requires the permission for listening to notifications)
         //https://stackoverflow.com/questions/3630733/how-to-check-which-notifications-are-active-in-status-bar-in-android-dev
@@ -45,20 +56,22 @@ object Utils {
                 for (i in activeNotifications!!.indices) {
                     val activeNotification = activeNotifications[i]
                     val notification: Notification = activeNotification.notification
-                    val body: String = notification.extras.getString("android.text", "no found by key android.text") //com.oath.mobile.shadowfax.demo.MsgString
+                    val title: String = notification.extras.getString(EXTRA_TITLE, "no found by key $EXTRA_TITLE")
+                    val body: String = notification.extras.getString(EXTRA_TEXT, "no found by key android.text") //com.oath.mobile.shadowfax.demo.MsgString
 
                     Log.w("+++", "+++ [" + i + "]: id: " + activeNotification.id +
                         ", tag:" + activeNotification.tag +
                         ", getPackageName:" + activeNotification.packageName +
                         ", getPostTime:" + activeNotification.postTime +
                         ", body:" + body +
+                        ", tile: $title"+
                         ", groupKey:" + activeNotification.groupKey +
                         ", key:" + activeNotification.key +
                         ", n.grp:" + notification.getGroup() +
                         ", getUser:" + activeNotification.user
                     )
                 }
-                val toBeSorted: MutableList<StatusBarNotification> = activeNotifications.toMutableList()// Arrays.asList(activeNotifications)
+                toBeSorted = activeNotifications.toMutableList()// Arrays.asList(activeNotifications)
                 Collections.sort(toBeSorted, Comparator<StatusBarNotification?> { a, b ->
                     if (a != null && b != null) {
                         java.lang.Long.valueOf(b.postTime).compareTo(a.postTime)
@@ -69,32 +82,62 @@ object Utils {
                 for (i in toBeSorted.indices) {
                     val activeNotification = toBeSorted[i]
                     val notification: Notification = activeNotification.notification
-                    val body: String = notification.extras.getString("android.text", "no found by key android.text") //com.oath.mobile.shadowfax.demo.MsgString
+                    val title: String = notification.extras.getString(EXTRA_TITLE, "no found by key $EXTRA_TITLE")
+                    val body: String = notification.extras.getString(EXTRA_TEXT, "no found by key android.text")
 
                     val notfExtraStr = bundleToString(notification.extras)
-                    Log.i("+++", "+++ $notfExtraStr")
-
+                    Log.i("+++", "+++ [$i]: notification.extras: $notfExtraStr")
                     Log.d("+++", "+++ [" + i + "]: id: " + activeNotification.id +
                         ", tag:" + activeNotification.tag +
                         ", getPackageName:" + activeNotification.packageName +
                         ", getPostTime:" + activeNotification.postTime +
+                        ", tile: $title"+
                         ", body:" + body +
                         ", getUser:" + activeNotification.user
                     )
+                    val notifItem = NotificationData (activeNotification.id,
+                        title, body, activeNotification.postTime)
 
+                    activeotificationDataList.add(notifItem)
 
-                    NotificationData(activeNotification.id, "title ${activeNotification.key}", "body: $body", activeNotification.postTime).apply {
-                        activeotificationDataList.add(this)
-                    }
                 }
             } catch (e: Exception) {
                 Log.e("+++", "NotificationManager.getActiveNotifications error!$e")
             }
         }
-        return activeotificationDataList
+        return Pair(activeotificationDataList, toBeSorted)
     }
 
-    fun cancelNotificationIfNeeded(appContext: Context) {
+    fun notifyWithPurgeLatestFirst(context: Context, theId: Int, newNtify: Notification) {
+
+        val p = getActiveNotification()
+        val sortedActiveNotifs = p.second
+
+        Log.d("+++", "+++ notifyWithPurgeLatestFirst(), notifyWithPurgeLatestFirst.size: ${sortedActiveNotifs.size}")
+
+        if (sortedActiveNotifs.size > maxActiveNoticicationAllowd - 1) {
+            for (i in sortedActiveNotifs.size - 1 downTo maxActiveNoticicationAllowd) {
+                val activeNotification = sortedActiveNotifs[i]
+                if (activeNotification.tag !== "ranker_group") {
+                    NotificationManagerCompat.from(appContext).cancel(activeNotification.id)
+                }
+                val notification: Notification = activeNotification.notification
+                val body: String = notification.extras.getString(EXTRA_TEXT, "no found by key android.text") //com.oath.mobile.shadowfax.demo.MsgString
+                Log.v("+++", "+++ [" + i + "]: id: " + activeNotification.id +
+                        ", tag:" + activeNotification.tag +
+                        ", getPackageName:" + activeNotification.packageName +
+                        ", getPostTime:" + activeNotification.postTime +
+                        ", body:" + body +
+                        ", getUser:" + activeNotification.user
+                )
+            }
+        }
+
+        val notificationManager = NotificationManagerCompat.from(context)
+        notificationManager.notify(theId, newNtify)
+    }
+
+    fun cancelNotificationIfNeeded(appContext: Context, strategy: ThrottleStrategy) {
 
         //tag: ranker_group
         val notificationManagerCompat: NotificationManagerCompat = NotificationManagerCompat.from(appContext)
@@ -115,7 +158,7 @@ object Utils {
                 for (i in activeNotifications!!.indices) {
                     val activeNotification = activeNotifications[i]
                     val notification: Notification = activeNotification.notification
-                    val body: String = notification.extras.getString("android.text", "no found by key android.text") //com.oath.mobile.shadowfax.demo.MsgString
+                    val body: String = notification.extras.getString(EXTRA_TEXT, "no found by key android.text") //com.oath.mobile.shadowfax.demo.MsgString
 
                     Log.w("+++", "+++ [" + i + "]: id: " + activeNotification.id +
                         ", tag:" + activeNotification.tag +
@@ -139,7 +182,7 @@ object Utils {
                 for (i in toBeSorted.indices) {
                     val activeNotification = toBeSorted[i]
                     val notification: Notification = activeNotification.notification
-                    val body: String = notification.extras.getString("android.text", "no found by key android.text") //com.oath.mobile.shadowfax.demo.MsgString
+                    val body: String = notification.extras.getString(EXTRA_TEXT, "no found by key android.text") //com.oath.mobile.shadowfax.demo.MsgString
                     Log.d("+++", "+++ [" + i + "]: id: " + activeNotification.id +
                         ", tag:" + activeNotification.tag +
                         ", getPackageName:" + activeNotification.packageName +
@@ -148,14 +191,14 @@ object Utils {
                         ", getUser:" + activeNotification.user
                     )
                 }
-                if (toBeSorted.size > maxNoticicationAllowd) {
-                    for (i in toBeSorted.size - 1 downTo maxNoticicationAllowd) {
+                if (toBeSorted.size > maxActiveNoticicationAllowd) {
+                    for (i in toBeSorted.size - 1 downTo maxActiveNoticicationAllowd) {
                         val activeNotification = toBeSorted[i]
                         if (activeNotification.tag !== "ranker_group") {
                             NotificationManagerCompat.from(appContext).cancel(activeNotification.id)
                         }
                         val notification: Notification = activeNotification.notification
-                        val body: String = notification.extras.getString("android.text", "no found by key android.text") //com.oath.mobile.shadowfax.demo.MsgString
+                        val body: String = notification.extras.getString(EXTRA_TEXT, "no found by key android.text") //com.oath.mobile.shadowfax.demo.MsgString
                         Log.v("+++", "+++ [" + i + "]: id: " + activeNotification.id +
                             ", tag:" + activeNotification.tag +
                             ", getPackageName:" + activeNotification.packageName +
@@ -182,6 +225,13 @@ object Utils {
             context.startActivity(intent)
         }
     }
+
+//    private val postedNotifMap: MutableMap<Int, NotificationData> = mutableMapOf<Int, NotificationData>()
+//    fun registerPostedNotif(notifId: Int, notifItem: NotificationData) {
+//        postedNotifMap[notifId] = notifItem
+//        Log.v("+++", "+++ registerPostedNotif($notifId, $notifItem), postedNotifMap.size: ${postedNotifMap.size}")
+//    }
+//    fun clearPostedNotfiMap() = postedNotifMap.clear()
 
     ///
     fun reflectMember() {

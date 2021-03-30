@@ -35,13 +35,14 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="6dp"
                 android:layout_marginRight="6dp"
+                android:textSize="11sp"
                 tools:text="title 2, body 22, 121121212121"/>
 
         </LinearLayout>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="24dp"
+            android:layout_marginLeft="2dp"
             android:orientation="horizontal">
 
             <TextView

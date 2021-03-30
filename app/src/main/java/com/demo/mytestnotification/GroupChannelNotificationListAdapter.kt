@@ -53,8 +53,8 @@ class GroupChannelAdapter(dataList: ArrayList<NotificationData>,
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
 
         val notifItem = dataSet[position]
-        viewHolder.id.text = "id:"+notifItem.id.toString() +", [group: ${notifItem.groupId}, channelId: ${notifItem.channelId}]"
-        viewHolder.content.text = "${notifItem.title}, ${notifItem.body}, ${notifItem.time}"
+        viewHolder.id.text = "id: "+notifItem.id.toString() +", ${notifItem.time}"
+        viewHolder.content.text = "${notifItem.title}, ${notifItem.body}"
 
         updateChannleBk(viewHolder, notifItem)
 

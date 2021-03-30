@@ -148,20 +148,37 @@ object Utils {
                         "no found by key android.text"
                     )
 
+                    val channelId_groupId = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        val notificationManager = NotificationManagerCompat.from(Utils.appContext)
+                        val channel = notificationManager.getNotificationChannel(notification.channelId)
+                        Log.v("+++", "+++ group_channelId(), notification.channelId: ${notification.channelId} --> channel.id: ${channel?.id}\n" +
+                                "notification.group: ${notification.group} --> channel?.group: ${channel?.group} ")
+                        if (channel != null) {
+                            Pair(channel.id, channel.group)
+                        } else {
+                            null
+                        }
+
+                    } else {
+                        null
+                    }
+
                     val notfExtraStr = bundleToString(notification.extras)
                     Log.i("+++", "+++ [$i]: notification.extras: $notfExtraStr")
                     Log.d(
-                        "+++", "+++ [" + i + "]: id: " + activeNotification.id +
+                        "+++", "+++ @@@ [" + i + "]: id: " + activeNotification.id +
                                 ", tag:" + activeNotification.tag +
                                 ", getPackageName:" + activeNotification.packageName +
                                 ", getPostTime:" + activeNotification.postTime +
                                 ", tile: $title" +
                                 ", body:" + body +
-                                ", getUser:" + activeNotification.user
+                                ", getUser:" + activeNotification.user +
+                                ", channelId: ${channelId_groupId?.first} " +
+                                ", notification.group: ${channelId_groupId?.second}"
                     )
                     val notifItem = NotificationData(
                         activeNotification.id,
-                        title, body, activeNotification.postTime
+                        title, body, activeNotification.postTime, channelId_groupId?.first, channelId_groupId?.second
                     )
 
                     activeotificationDataList.add(notifItem)

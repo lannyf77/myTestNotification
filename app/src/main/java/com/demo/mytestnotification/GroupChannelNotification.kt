@@ -86,14 +86,13 @@ class GroupChannelNotification : AppCompatActivity() {
         recyclerView.setLayoutManager(LinearLayoutManager(this))
         recyclerView.adapter = GroupChannelAdapter(dataList, groupId, channelId)
         recyclerView.addItemDecoration(DividerItemDecoration(this, LinearLayoutManager.VERTICAL))
-
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         Log.i("+++", "+++ +++ GroupChannelNotification::onNewIntent($intent), $this")
 
-//        updateActivNotifsInRV()
+        updateActivNotifsInRV()
     }
 
     override fun onResume() {
@@ -103,29 +102,72 @@ class GroupChannelNotification : AppCompatActivity() {
         }
     }
 
-//    fun updateActivNotifsInRV() {
-//        adapterNotificationDataList.clear()
-//        runOnUiThread(Runnable() {
-//            val arr = Utils.getActiveNotification().first
-//            Log.d("+++", "+++ updateActivNotifsInRV(), arr.size: ${arr.size}")
-//            for (notif: NotificationData in arr) {
-//                updateList(notif)
-//            }
-//        })
-//    }
+    fun clearRvs() {
+        adapterNotificationDataListGaC1.clear()
+        (recyclerViewGaC1.adapter as? GroupChannelAdapter)?.updateList(adapterNotificationDataListGaC1)
+        adapterNotificationDataListGaC2.clear()
+        (recyclerViewGaC2.adapter as? GroupChannelAdapter)?.updateList(adapterNotificationDataListGaC2)
+        adapterNotificationDataListGbC3.clear()
+        (recyclerViewGbC3.adapter as? GroupChannelAdapter)?.updateList(adapterNotificationDataListGbC3)
+        adapterNotificationDataListGbC4.clear()
+        (recyclerViewGbC4.adapter as? GroupChannelAdapter)?.updateList(adapterNotificationDataListGbC4)
+    }
 
-//    private fun updateList(notifData: NotificationData) {
-//
-//        adapterNotificationDataList.add(notifData)
-//
-//        (recyclerView.adapter as? GroupChannelAdapter)?.updateList(adapterNotificationDataList)
-//        val notiSize = (recyclerView.adapter?.itemCount) ?: adapterNotificationDataList.size
-//        recyclerView.scrollToPosition(notiSize - 1);
-//
-//        Log.d("+++", "+++ --- exit updateList(), adapterNotificationDataList: ${adapterNotificationDataList.size}")
-//    }
+    fun updateActivNotifsInRV() {
+        adapterNotificationDataListGaC1.clear()
+        adapterNotificationDataListGaC2.clear()
+        adapterNotificationDataListGbC3.clear()
+        adapterNotificationDataListGbC4.clear()
+        runOnUiThread(Runnable() {
+            val arr = Utils.getActiveNotification().first
+
+            for (notif: NotificationData in arr) {
+                Log.d("+++", "+++ updateActivNotifsInRV(), $notif,  arr.size: ${arr.size}")
+                notif.channelId?.let {
+                    updateListByChannelId(notif.channelId, notif)
+                }
+            }
+        })
+    }
+
+    private fun updateListByChannelId(channelId: String, notifData: NotificationData) {
+
+        val rvPair = when (channelId) {
+            CHANNEL_ID_1 -> {
+                Pair(adapterNotificationDataListGaC1, recyclerViewGaC1)
+            }
+            CHANNEL_ID_2 -> {
+                Pair(adapterNotificationDataListGaC2, recyclerViewGaC2)
+            }
+            CHANNEL_ID_3 -> {
+                Pair(adapterNotificationDataListGbC3, recyclerViewGbC3)
+            }
+            CHANNEL_ID_4 -> {
+                Pair(adapterNotificationDataListGbC4, recyclerViewGbC4)
+            }
+            else -> {
+                Log.e("+++", "+++ !!! updateListByChannelId() wrong channelId: $channelId")
+                null
+            }
+        }
+        rvPair?.let {
+            updateList(rvPair.first, rvPair.second, notifData)
+        }
+    }
+
+    private fun updateList(adapterNotificationDataList: ArrayList<NotificationData>, recyclerView: RecyclerView, notifData: NotificationData) {
+        adapterNotificationDataList.add(notifData)
+
+        (recyclerView.adapter as? GroupChannelAdapter)?.updateList(adapterNotificationDataList)
+        val notiSize = (recyclerView.adapter?.itemCount) ?: adapterNotificationDataList.size
+        recyclerView.scrollToPosition(notiSize - 1);
+
+        Log.d("+++", "+++ --- exit updateList(), adapterNotificationDataList: ${adapterNotificationDataList.size}")
+    }
 
     fun startNotify(view: View) {
+
+        clearRvs()
 
         if (!NotificationManagerCompat.from(this).areNotificationsEnabled()) {
             Utils.opnNotificationSettings(this, packageName)
@@ -167,7 +209,7 @@ class GroupChannelNotification : AppCompatActivity() {
                 else -> Pair(GROUP_A, CHANNEL_ID_1)
             }
             val notiItem = NotificationData(secureRandom.nextInt(100),
-                "title $i", "body: $i - [${Group_Channel.first}, ${Group_Channel.second}]", System.currentTimeMillis(), Group_Channel.second, Group_Channel.first )
+                "title $i", "body: $i", System.currentTimeMillis(), Group_Channel.second, Group_Channel.first )
 
             Log.e("+++", "+++ startNotifToChannel($i), $notiItem")
             sendNotificationToUser(this@GroupChannelNotification, Group_Channel.second, notiItem)
@@ -268,7 +310,7 @@ class GroupChannelNotification : AppCompatActivity() {
         }
 
         Handler(Looper.getMainLooper()).postDelayed({
-            //updateActivNotifsInRV()
+            updateActivNotifsInRV()
         }, 200)
     }
 

@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.demo.mytestnotification.Utils.CHANNEL_ID_1
+import com.demo.mytestnotification.Utils.deleteAllNotificationGroups
 import com.demo.mytestnotification.Utils.maxActiveNoticicationAllowd
 import com.demo.mytestnotification.Utils.notifyWithPurgeLatestFirst
 import com.demo.mytestnotification.Utils.notifyWithReplaceLatestFirst
@@ -36,6 +37,7 @@ class SimpleNotification : AppCompatActivity() {
     init {
         Log.i("+++", "+++ SimpleNotification::init{}, $this")
         NotificationManagerCompat.from(Utils.appContext).cancelAll()
+        deleteAllNotificationGroups()
         //setupStaticTestNotifs()
     }
 

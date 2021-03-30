@@ -4,13 +4,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:padding="18dp"
     tools:context=".MainActivity">
 
     <Button
         android:id="@+id/simpleNotification"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
         android:layout_marginTop="167dp"
         android:text="Simple notification"
         android:onClick="onSimpleNotificaion"
@@ -19,25 +19,25 @@
 
     <Button
         android:id="@+id/groupNotification"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
         android:layout_marginTop="78dp"
         android:text="Notification in Groups and channels"
         android:onClick="onNotificationGroupChannels"
         app:layout_constraintStart_toStartOf="@+id/simpleNotification"
         app:layout_constraintTop_toBottomOf="@+id/simpleNotification" />
 
-    <Button
+    <ImageButton
         android:id="@+id/notificationSettings"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="170dp"
+        android:layout_marginStart="0dp"
         android:layout_marginTop="34dp"
-        android:layout_marginEnd="29dp"
-        android:text="notificationSettings"
+        android:layout_marginEnd="0dp"
         android:onClick="opnNotificationSettings"
+        android:src="@drawable/ic_settings"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 

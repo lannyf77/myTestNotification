@@ -30,7 +30,10 @@ class MainActivity : AppCompatActivity() {
         startActivity(intent)
     }
     fun onNotificationGroupChannels(view: View) {
-
+        val intent = Intent(this, GroupChannelNotification::class.java).apply {
+            //putExtra(EXTRA_MESSAGE, message)
+        }
+        startActivity(intent)
     }
 
     fun opnNotificationSettings(view: View) {

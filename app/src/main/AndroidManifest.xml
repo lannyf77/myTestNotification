@@ -21,6 +21,10 @@
         <activity android:name=".SimpleNotification"
             android:launchMode="singleTask"/>
 
+        <activity android:name=".GroupChannelNotification"
+            android:launchMode="singleTask"/>
+
+
     </application>
 
 </manifest>

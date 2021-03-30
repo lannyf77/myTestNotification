@@ -2,6 +2,7 @@ package com.demo.mytestnotification
 
 import android.app.Notification
 import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
@@ -19,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.demo.mytestnotification.Utils.CHANNEL_ID_1
 import com.demo.mytestnotification.Utils.maxActiveNoticicationAllowd
 import com.demo.mytestnotification.Utils.notifyWithPurgeLatestFirst
+import com.demo.mytestnotification.Utils.notifyWithReplaceLatestFirst
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.security.SecureRandom
@@ -68,6 +70,13 @@ class SimpleNotification : AppCompatActivity() {
         updateActivNotifsInRV()
     }
 
+    override fun onResume() {
+        super.onResume()
+        findViewById<RadioGroup>(R.id.typeSelectorRadioGroup)?.setOnCheckedChangeListener { group, checkedId ->
+            NotificationManagerCompat.from(Utils.appContext).cancelAll()
+        }
+    }
+
     fun setupRecyclerView() {
         recyclerView = findViewById<RecyclerView>(R.id.recycler_list)
         recyclerView.setLayoutManager(LinearLayoutManager(this))
@@ -106,19 +115,27 @@ class SimpleNotification : AppCompatActivity() {
             return
         }
 
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+        Utils.createChannel(
+            CHANNEL_ID_1,
+            "Notifications channel 1",
+            "This is Channel 1 for notifications for ...",
+            NotificationManager.IMPORTANCE_HIGH,
+            null
+        )
 
-            val name = "Notifications channel 1"
-            val descriptionText = "This is Channel 1 for notifications for ..."
-            val importance = android.app.NotificationManager.IMPORTANCE_HIGH
-            val channel = NotificationChannel(CHANNEL_ID_1, name, importance).apply {
-                description = descriptionText
-            }
-            // Register the channel with the system
-            val notificationManager: android.app.NotificationManager =
-                this.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
-            notificationManager.createNotificationChannel(channel)
-        }
+//        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+//
+//            val name = "Notifications channel 1"
+//            val descriptionText = "This is Channel 1 for notifications for ..."
+//            val importance = android.app.NotificationManager.IMPORTANCE_HIGH
+//            val channel = NotificationChannel(CHANNEL_ID_1, name, importance).apply {
+//                description = descriptionText
+//            }
+//            // Register the channel with the system
+//            val notificationManager: android.app.NotificationManager =
+//                this.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
+//            notificationManager.createNotificationChannel(channel)
+//        }
 
         GlobalScope.launch {
             //Log.e("+++", "+++ +++ +++ bf for (i: Int in 0..8)")
@@ -192,8 +209,7 @@ class SimpleNotification : AppCompatActivity() {
                 notifyWithPurgeLatestFirst(context, theId, builder.build())
             }
             R.id.strategy_replace -> {
-                val notificationManager = NotificationManagerCompat.from(context)
-                notificationManager.notify(theId, builder.build())
+                notifyWithReplaceLatestFirst(context, theId, builder.build())
             }
             else -> {
                 val notificationManager = NotificationManagerCompat.from(context)
@@ -204,5 +220,9 @@ class SimpleNotification : AppCompatActivity() {
         Handler(Looper.getMainLooper()).postDelayed({
             updateActivNotifsInRV()
         }, 200)
+    }
+
+    fun opnNotificationSettings(view: View) {
+        Utils.opnNotificationSettings(this, packageName)
     }
 }

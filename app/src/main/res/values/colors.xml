@@ -9,5 +9,9 @@
     <color name="white">#FFFFFFFF</color>
 
     <color name="divider_color">#091729</color>
-    <color name="channel_1_color">#E884D7</color>
+    <color name="channel_1_color">#ECE783</color>
+    <color name="channel_2_color">#D34375</color>
+    <color name="channel_3_color">#62F823</color>
+    <color name="channel_4_color">#1D3FEA</color>
+    <color name="channel_color">#8F9497</color>
 </resources>

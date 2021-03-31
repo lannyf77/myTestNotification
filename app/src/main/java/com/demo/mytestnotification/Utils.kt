@@ -178,7 +178,8 @@ object Utils {
                     )
                     val notifItem = NotificationData(
                         activeNotification.id,
-                        title, body, activeNotification.postTime, channelId_groupId?.first, channelId_groupId?.second
+                        title, body, activeNotification.postTime, channelId_groupId?.first, channelId_groupId?.second,
+                        (i == (toBeSorted.size-1))
                     )
 
                     activeotificationDataList.add(notifItem)

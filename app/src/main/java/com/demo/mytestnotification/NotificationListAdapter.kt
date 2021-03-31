@@ -24,9 +24,11 @@ class CustomAdapter(dataList: ArrayList<NotificationData>) : RecyclerView.Adapte
         val row_ll = view.findViewById<CardView>(R.id.row_ll)
         val img: ImageView = view.findViewById(R.id.channelid)
         val id: TextView = view.findViewById(R.id.notif_id)
+        val grp_channel_id: TextView = view.findViewById(R.id.notif_grp_channel_id)
         val title: TextView = view.findViewById(R.id.notif_title)
         val body: TextView = view.findViewById(R.id.notif_body)
         val time: TextView = view.findViewById(R.id.notif_time)
+        val oldestTxt: TextView = view.findViewById(R.id.oldest_float_txt)
 
     }
 
@@ -52,10 +54,12 @@ class CustomAdapter(dataList: ArrayList<NotificationData>) : RecyclerView.Adapte
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
 
         val notifItem = dataSet[position]
-        viewHolder.id.text = "id:"+notifItem.id.toString() +", [group: ${notifItem.groupId}, channelId: ${notifItem.channelId}]"
+        viewHolder.id.text = "id:"+notifItem.id.toString()
+        viewHolder.grp_channel_id.text = ", [group: ${notifItem.groupId}, channelId: ${notifItem.channelId}]"
         viewHolder.title.text = notifItem.title
         viewHolder.body.text = notifItem.body
         viewHolder.time.text = "post at:"+ notifItem.time.toString()
+        viewHolder.oldestTxt.visibility = if (notifItem.oldest) View.VISIBLE else View.GONE
 
         updateChannleBk(viewHolder, notifItem)
 

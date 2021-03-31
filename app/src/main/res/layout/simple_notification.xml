@@ -29,11 +29,21 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <TextView
+        android:id="@+id/description"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ImgNotificationSettings"
+        android:text="list all active notifications"/>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="60dp"
+        android:layout_marginTop="30dp"
         android:scrollbars="vertical"
         app:layout_constrainedHeight="true"
         app:layout_constraintBottom_toTopOf="@+id/throttle_strategy"
@@ -43,7 +53,7 @@
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
 
-        app:layout_constraintTop_toBottomOf="@+id/ImgNotificationSettings"
+        app:layout_constraintTop_toBottomOf="@+id/description"
         tools:itemCount="10"
         tools:listitem="@layout/notification_item">
 
@@ -60,11 +70,11 @@
         android:orientation="vertical">
 
         <RelativeLayout
-            android:id="@+id/rivendell_pbutton"
+            android:id="@+id/throttle_strategy_group_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:layout_marginRight="20dp"
+            android:layout_marginRight="6dp"
             android:orientation="vertical"
             >
             <LinearLayout

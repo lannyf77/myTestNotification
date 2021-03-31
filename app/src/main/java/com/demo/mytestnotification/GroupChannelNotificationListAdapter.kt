@@ -28,7 +28,9 @@ class GroupChannelAdapter(dataList: ArrayList<NotificationData>,
         val row_ll = view.findViewById<CardView>(R.id.row_ll)
         val img: ImageView = view.findViewById(R.id.channelid)
         val id: TextView = view.findViewById(R.id.notif_id)
+        val grp_channel_id: TextView = view.findViewById(R.id.notif_grp_channel_id)
         val content: TextView = view.findViewById(R.id.notif_content)
+        val oldestTxt: TextView = view.findViewById(R.id.oldest_float_txt)
     }
 
     fun updateList(data: ArrayList<NotificationData>) {
@@ -53,8 +55,11 @@ class GroupChannelAdapter(dataList: ArrayList<NotificationData>,
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
 
         val notifItem = dataSet[position]
-        viewHolder.id.text = "id: "+notifItem.id.toString() +", ${notifItem.time}"
+        viewHolder.id.text = "id: "+notifItem.id.toString()
+        viewHolder.grp_channel_id.text = ", [${notifItem.time}]"
         viewHolder.content.text = "${notifItem.title}, ${notifItem.body}"
+
+        viewHolder.oldestTxt.visibility = if (notifItem.oldest) View.VISIBLE else View.GONE
 
         updateChannleBk(viewHolder, notifItem)
 

@@ -174,30 +174,16 @@ class GroupChannelNotification : AppCompatActivity() {
             return
         }
 
-//        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-//
-//            val name = "Notifications channel 1"
-//            val descriptionText = "This is Channel 1 for notifications for ..."
-//            val importance = android.app.NotificationManager.IMPORTANCE_HIGH
-//            val channel = NotificationChannel(CHANNEL_ID_1, name, importance).apply {
-//                description = descriptionText
-//            }
-//            // Register the channel with the system
-//            val notificationManager: android.app.NotificationManager =
-//                this.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
-//            notificationManager.createNotificationChannel(channel)
-//        }
-
         GlobalScope.launch {
             //Log.e("+++", "+++ +++ +++ bf for (i: Int in 0..8)")
-            for (i: Int in 0..1) {//0..8
-                startNotifToChannel()
+            for (i: Int in 0..20) {//0..8
+                startNotifToChannel(i)
             }
         }
         //Log.e("+++", "+++ +++ after for (i: Int in 0..8)")
     }
 
-    fun startNotifToChannel() {
+    fun startNotifToChannel(baseIndx: Int) {
         val secureRandom = SecureRandom()
         for (i: Int in 0..3) {
             SystemClock.sleep(2000)
@@ -208,8 +194,8 @@ class GroupChannelNotification : AppCompatActivity() {
                 3 -> Pair(GROUP_B, CHANNEL_ID_4)
                 else -> Pair(GROUP_A, CHANNEL_ID_1)
             }
-            val notiItem = NotificationData(secureRandom.nextInt(100),
-                "title $i", "body: $i", System.currentTimeMillis(), Group_Channel.second, Group_Channel.first )
+            val notiItem = NotificationData(secureRandom.nextInt(99999),
+                "title ${i+1}$baseIndx", "body: ${i+1}$baseIndx", System.currentTimeMillis(), Group_Channel.second, Group_Channel.first )
 
             Log.e("+++", "+++ startNotifToChannel($i), $notiItem")
             sendNotificationToUser(this@GroupChannelNotification, Group_Channel.second, notiItem)

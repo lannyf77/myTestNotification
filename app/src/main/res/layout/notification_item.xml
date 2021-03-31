@@ -10,10 +10,11 @@
     tools:background="#ff00ff">
 
     <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/outer_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        tools:background="#ff0000">
+        android:background="@color/channel_1_color">
 
         <LinearLayout
             android:padding="2dp"
@@ -65,17 +66,38 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="6dp"
                 android:textSize="9sp"
-                android:text="notif id, (group, channel)"/>
+                android:textColor="#ff0000"
+                android:text="id: 88"/>
+
+            <TextView
+                android:id="@+id/notif_grp_channel_id"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="6dp"
+                android:textSize="9sp"
+                android:text="(group, channel)"/>
 
         </LinearLayout>
     </androidx.appcompat.widget.LinearLayoutCompat>
-    <View
-        android:id="@+id/article_ui_sdk_engagement_bar_divider"
-        android:layout_width="0dp"
-        android:layout_height="1dp"
-        android:background="@color/divider_color"
+    <TextView
+        android:id="@+id/oldest_float_txt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:background="#00000000"
+        android:textColor="#ffffff"
+        android:text="Oldest"
+        android:textSize="22sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1sp"
+        android:background="@color/divider_color"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.cardview.widget.CardView>

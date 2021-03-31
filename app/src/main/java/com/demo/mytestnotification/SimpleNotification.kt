@@ -11,6 +11,7 @@ import android.util.Log
 import android.view.View
 import android.widget.EditText
 import android.widget.RadioGroup
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -38,22 +39,7 @@ class SimpleNotification : AppCompatActivity() {
         Log.i("+++", "+++ SimpleNotification::init{}, $this")
         NotificationManagerCompat.from(Utils.appContext).cancelAll()
         deleteAllNotificationGroups()
-        //setupStaticTestNotifs()
     }
-
-//    private var staticNotificationData = arrayListOf<NotificationData>()
-//    fun setupStaticTestNotifs() {
-//        val secureRandom = SecureRandom()
-//        for (i in 0..100) {
-//            NotificationData(secureRandom.nextInt(100), "title $i", "body: $i", System.currentTimeMillis()).apply {
-//                staticNotificationData.add(this)
-//
-////                if (i<3) {
-////                    adapterNotificationDataList.add(this)
-////                }
-//            }
-//        }
-//    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,14 +47,15 @@ class SimpleNotification : AppCompatActivity() {
 //        Utils.clearPostedNotfiMap()
         setContentView(R.layout.simple_notification)
         notificationManager = NotificationManagerCompat.from(this)
+        findViewById<TextView>(R.id.description)?.apply {
+            text = "list all active notifications"
+        }
         setupRecyclerView()
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         Log.i("+++", "+++ +++ onNewIntent($intent), $this")
-
-        //updateList(notifData: NotificationData)
         updateActivNotifsInRV()
     }
 
@@ -76,6 +63,21 @@ class SimpleNotification : AppCompatActivity() {
         super.onResume()
         findViewById<RadioGroup>(R.id.typeSelectorRadioGroup)?.setOnCheckedChangeListener { group, checkedId ->
             NotificationManagerCompat.from(Utils.appContext).cancelAll()
+
+            findViewById<TextView>(R.id.description)?.apply {
+                when (checkedId) {
+                    R.id.strategy_replace -> {
+                        text = "new notification will use oldset one's id, and the 2nd oldest becomes the oldest"
+                    }
+                    R.id.strategy_purge -> {
+                        text = "the oldest notification will be purged, the 2nd oldest becomes the oldest"
+                    }
+                    else -> {
+                        text = "list all active notifications"
+                    }
+
+                }
+            }
         }
     }
 
@@ -142,10 +144,10 @@ class SimpleNotification : AppCompatActivity() {
         GlobalScope.launch {
             //Log.e("+++", "+++ +++ +++ bf for (i: Int in 0..8)")
             val secureRandom = SecureRandom()
-            for (i: Int in 0..8) {
+            for (i: Int in 0..80) {
                 SystemClock.sleep(2000)
-                val notiItem = NotificationData(secureRandom.nextInt(100),
-                    "title $i", "body: $i", System.currentTimeMillis())
+                val notiItem = NotificationData(secureRandom.nextInt(999),
+                    "title ${i+1}", "body: ${i+1}", System.currentTimeMillis())
                 sendNotificationToUser(this@SimpleNotification, notiItem)
 
             }

@@ -4,13 +4,17 @@ import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.os.*
+import android.text.Html
 import android.util.Log
 import android.view.View
+import android.widget.Button
 import android.widget.EditText
 import android.widget.RadioGroup
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -26,6 +30,8 @@ import com.demo.mytestnotification.Utils.maxActiveNoticicationAllowd
 import com.demo.mytestnotification.Utils.notifyWithPurgeLatestFirst
 import com.demo.mytestnotification.Utils.notifyWithReplaceLatestFirst
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.security.SecureRandom
 
@@ -49,13 +55,41 @@ class GroupChannelNotification : AppCompatActivity() {
         createNotificationChannels()
     }
 
+    ///
+    var interval: Long = 2
+    private fun setupNotifyInterval() {
+        setNotifyButtonText()
+        findViewById<EditText>(R.id.interval)?.apply {
+            this.addTextChangedListener {
+                if (this.hasFocus() && it != null && (it.toString().toIntOrNull() != null)) {
+                    setNotifyButtonText()
+                }
+            }
+        }
+    }
+    private fun setNotifyButtonText() {
+        interval = ((findViewById<EditText>(R.id.interval)?.text?.toString()?.toIntOrNull() ?: 0)).toLong()
+        findViewById<Button>(R.id.start_notify)?.let {
+            it.text = "Start notify - $interval sec"
+        }
+    }
+
+    private fun setup() {
+        notificationManager = NotificationManagerCompat.from(this)
+        findViewById<TextView>(R.id.description)?.apply {
+            text = "list all active notifications"
+        }
+        setupNotifyInterval()
+        setupRecyclerView()
+    }
+    ///
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.i("+++", "+++ GroupChannelNotification::onCreate(savedInstanceState==null: ${savedInstanceState==null}), $this")
         setContentView(R.layout.group_channel_notification)
-        notificationManager = NotificationManagerCompat.from(this)
-        setupRecyclerView()
+        setup()
     }
 
     fun setupRecyclerView() {
@@ -103,6 +137,8 @@ class GroupChannelNotification : AppCompatActivity() {
     }
 
     fun clearRvs() {
+        NotificationManagerCompat.from(Utils.appContext).cancelAll()
+        resetAllRvLabel()
         adapterNotificationDataListGaC1.clear()
         (recyclerViewGaC1.adapter as? GroupChannelAdapter)?.updateList(adapterNotificationDataListGaC1)
         adapterNotificationDataListGaC2.clear()
@@ -165,7 +201,14 @@ class GroupChannelNotification : AppCompatActivity() {
         Log.d("+++", "+++ --- exit updateList(), adapterNotificationDataList: ${adapterNotificationDataList.size}")
     }
 
+    var postingJob: Job? = null
     fun startNotify(view: View) {
+        if (postingJob != null) {
+            postingJob?.cancel()
+            postingJob = null
+            Log.e("+++", "+++ !!! startNotify() cancel")
+            return
+        }
 
         clearRvs()
 
@@ -174,36 +217,62 @@ class GroupChannelNotification : AppCompatActivity() {
             return
         }
 
-        GlobalScope.launch {
-            //Log.e("+++", "+++ +++ +++ bf for (i: Int in 0..8)")
-            for (i: Int in 0..20) {//0..8
+        postingJob = GlobalScope.launch {
+            val pushRounds = (findViewById<EditText>(R.id.total_post_count)?.text?.toString()?.toInt() ?: 20) - 1
+            for (i: Int in 0..pushRounds) {//0..8
+                if (!this.isActive) {
+                    Log.e("+++", "+++ !!! startNotify() in lobalScope.launch, this.isActive == false, break")
+                    break
+                }
                 startNotifToChannel(i)
             }
         }
         //Log.e("+++", "+++ +++ after for (i: Int in 0..8)")
     }
 
+    fun resetAllRvLabel() {
+        resetRvLabel(R.id.txt_ga_c1, "list for Group_A_Channel_1")
+        resetRvLabel(R.id.txt_ga_c2, "list for Group_A_Channel_2")
+        resetRvLabel(R.id.txt_gb_c3, "list for Group_B_Channel_3")
+        resetRvLabel(R.id.txt_gb_c4, "list for Group_B_Channel_4")
+    }
+    fun resetRvLabel(txtViewId: Int, label: String) {
+        findViewById<TextView>(txtViewId)?.apply {
+            text = label
+        }
+    }
+
     fun startNotifToChannel(baseIndx: Int) {
         val secureRandom = SecureRandom()
         for (i: Int in 0..3) {
-            SystemClock.sleep(2000)
+
+            if (postingJob == null) {
+                Log.e("+++", "+++ !!! startNotify() in lobalScope.launch, postingJob == null, break")
+                break
+            }
+
             val Group_Channel = when(i) {
-                0 -> Pair(GROUP_A, CHANNEL_ID_1)
-                1 -> Pair(GROUP_A, CHANNEL_ID_2)
-                2 -> Pair(GROUP_B, CHANNEL_ID_3)
-                3 -> Pair(GROUP_B, CHANNEL_ID_4)
-                else -> Pair(GROUP_A, CHANNEL_ID_1)
+                0 -> Triple(GROUP_A, CHANNEL_ID_1, R.id.txt_ga_c1)
+                1 -> Triple(GROUP_A, CHANNEL_ID_2, R.id.txt_ga_c2)
+                2 -> Triple(GROUP_B, CHANNEL_ID_3, R.id.txt_gb_c3)
+                3 -> Triple(GROUP_B, CHANNEL_ID_4, R.id.txt_gb_c4)
+                else -> Triple(GROUP_A, CHANNEL_ID_1, R.id.txt_ga_c1)
             }
             val notiItem = NotificationData(secureRandom.nextInt(99999),
                 "title ${i+1}$baseIndx", "body: ${i+1}$baseIndx", System.currentTimeMillis(), Group_Channel.second, Group_Channel.first )
 
-            Log.e("+++", "+++ startNotifToChannel($i), $notiItem")
-            sendNotificationToUser(this@GroupChannelNotification, Group_Channel.second, notiItem)
+            Log.e("+++", "+++ startNotifToChannel($baseIndx, $i, (((baseIndx * 4)  + i) + 1):${((baseIndx * 4)  + i) + 1}), $notiItem")
+            if (sendNotificationToUser(this@GroupChannelNotification, Group_Channel.second, notiItem)) {
+                findViewById<TextView>(Group_Channel.third)?.let {
+                    Utils.blinkView(it, Html.fromHtml("<b>${((baseIndx * 4)  + i) + 1}th push (${notiItem.title})</b> <i>posted to drawer</i>"))
+                }
+            }
+            SystemClock.sleep(interval*2000)
         }
     }
 
 
-    fun sendNotificationToUser(context: Context, channelId: String, notiItem: NotificationData) {
+    fun sendNotificationToUser(context: Context, channelId: String, notiItem: NotificationData): Boolean {
 
         //Check notification status
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -214,12 +283,12 @@ class GroupChannelNotification : AppCompatActivity() {
 
                 android.util.Log.e("+++", "+++ !!! sendNotificationToUser(), channel.importance == android.app.NotificationManager.IMPORTANCE_NONE")
                 Utils.opnNotificationSettings(this, packageName)
-                return
+                return false
             }
         } else {
             if (!NotificationManagerCompat.from(context).areNotificationsEnabled()) {
                 Utils.opnNotificationSettings(this, packageName)
-                return
+                return false
             }
         }
 
@@ -298,6 +367,8 @@ class GroupChannelNotification : AppCompatActivity() {
         Handler(Looper.getMainLooper()).postDelayed({
             updateActivNotifsInRV()
         }, 200)
+
+        return true
     }
 
     private fun createNotificationChannels() {

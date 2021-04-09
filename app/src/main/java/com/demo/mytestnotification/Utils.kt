@@ -11,7 +11,11 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.service.notification.StatusBarNotification
+import android.text.Spanned
 import android.util.Log
+import android.view.animation.AlphaAnimation
+import android.view.animation.Animation
+import android.widget.TextView
 import androidx.core.app.NotificationCompat.EXTRA_TEXT
 import androidx.core.app.NotificationCompat.EXTRA_TITLE
 import androidx.core.app.NotificationManagerCompat
@@ -38,7 +42,9 @@ object Utils {
 
     fun deleteAllNotificationGroups() {
 
-        val notificationManagerCompat: NotificationManagerCompat = NotificationManagerCompat.from(appContext)
+        val notificationManagerCompat: NotificationManagerCompat = NotificationManagerCompat.from(
+            appContext
+        )
         val notificationChannelGroups: List<NotificationChannelGroup> = notificationManagerCompat.notificationChannelGroups
         for (group in notificationChannelGroups) {
             if (Build.VERSION.SDK_INT >= 26) {
@@ -52,7 +58,9 @@ object Utils {
 
     fun deleteAllNotificationChannels() {
 
-        val notificationManagerCompat: NotificationManagerCompat = NotificationManagerCompat.from(appContext)
+        val notificationManagerCompat: NotificationManagerCompat = NotificationManagerCompat.from(
+            appContext
+        )
         val channelList: List<NotificationChannel> = notificationManagerCompat.notificationChannels
         for (channel in channelList) {
             if (Build.VERSION.SDK_INT >= 26) {
@@ -151,8 +159,11 @@ object Utils {
                     val channelId_groupId = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         val notificationManager = NotificationManagerCompat.from(Utils.appContext)
                         val channel = notificationManager.getNotificationChannel(notification.channelId)
-                        Log.v("+++", "+++ group_channelId(), notification.channelId: ${notification.channelId} --> channel.id: ${channel?.id}\n" +
-                                "notification.group: ${notification.group} --> channel?.group: ${channel?.group} ")
+                        Log.v(
+                            "+++",
+                            "+++ group_channelId(), notification.channelId: ${notification.channelId} --> channel.id: ${channel?.id}\n" +
+                                    "notification.group: ${notification.group} --> channel?.group: ${channel?.group} "
+                        )
                         if (channel != null) {
                             Pair(channel.id, channel.group)
                         } else {
@@ -178,8 +189,12 @@ object Utils {
                     )
                     val notifItem = NotificationData(
                         activeNotification.id,
-                        title, body, activeNotification.postTime, channelId_groupId?.first, channelId_groupId?.second,
-                        (i == (toBeSorted.size-1))
+                        title,
+                        body,
+                        activeNotification.postTime,
+                        channelId_groupId?.first,
+                        channelId_groupId?.second,
+                        (i == (toBeSorted.size - 1))
                     )
 
                     activeotificationDataList.add(notifItem)
@@ -384,6 +399,19 @@ object Utils {
         }
     }
 
+    fun blinkView(v: TextView, txt: Spanned) {
+        v.post {
+            v.text = txt
+            val anim: Animation = AlphaAnimation(0.0f, 1.0f)
+            anim.duration = 1500 //You can manage the blinking time with this parameter
+
+            anim.startOffset = 20
+            anim.repeatMode = Animation.REVERSE
+            anim.repeatCount = 0 //Animation.INFINITE
+            v.startAnimation(anim)
+        }
+    }
+
 //    private val postedNotifMap: MutableMap<Int, NotificationData> = mutableMapOf<Int, NotificationData>()
 //    fun registerPostedNotif(notifId: Int, notifItem: NotificationData) {
 //        postedNotifMap[notifId] = notifItem
@@ -421,7 +449,13 @@ object Utils {
         Log.i(TAG, s)
     }
 
-    fun createChannel(channelId: String, name: String, descriptionText: String, importance: Int, groupId: String?=null) {
+    fun createChannel(
+        channelId: String,
+        name: String,
+        descriptionText: String,
+        importance: Int,
+        groupId: String? = null
+    ) {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             val notificationManager = NotificationManagerCompat.from(Utils.appContext)
             //this.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager

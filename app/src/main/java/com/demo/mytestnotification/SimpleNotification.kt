@@ -1,29 +1,35 @@
 package com.demo.mytestnotification
 
 import android.app.Notification
-import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.*
+import android.text.Html
 import android.util.Log
 import android.view.View
+import android.widget.Button
 import android.widget.EditText
 import android.widget.RadioGroup
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.text.isDigitsOnly
+import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.demo.mytestnotification.Utils.CHANNEL_ID_1
+import com.demo.mytestnotification.Utils.blinkView
 import com.demo.mytestnotification.Utils.deleteAllNotificationGroups
 import com.demo.mytestnotification.Utils.maxActiveNoticicationAllowd
 import com.demo.mytestnotification.Utils.notifyWithPurgeLatestFirst
 import com.demo.mytestnotification.Utils.notifyWithReplaceLatestFirst
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.security.SecureRandom
 
@@ -41,16 +47,39 @@ class SimpleNotification : AppCompatActivity() {
         deleteAllNotificationGroups()
     }
 
+    var interval: Long = 2
+    private fun setupNotifyInterval() {
+        setNotifyButtonText()
+        findViewById<EditText>(R.id.interval)?.apply {
+            this.addTextChangedListener {
+                if (this.hasFocus() && it != null && (it.toString().toIntOrNull() != null)) {
+                    setNotifyButtonText()
+                }
+            }
+        }
+    }
+    private fun setNotifyButtonText() {
+        interval = ((findViewById<EditText>(R.id.interval)?.text?.toString()?.toIntOrNull() ?: 0)).toLong()
+        findViewById<Button>(R.id.start_notify)?.let {
+            it.text = "Start notify - $interval sec"
+        }
+    }
+
+    private fun setup() {
+        notificationManager = NotificationManagerCompat.from(this)
+        findViewById<TextView>(R.id.description)?.apply {
+            text = "list all active notifications"
+        }
+        setupNotifyInterval()
+        setupRecyclerView()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.i("+++", "+++ onCreate(savedInstanceState==null: ${savedInstanceState==null}), $this")
 //        Utils.clearPostedNotfiMap()
         setContentView(R.layout.simple_notification)
-        notificationManager = NotificationManagerCompat.from(this)
-        findViewById<TextView>(R.id.description)?.apply {
-            text = "list all active notifications"
-        }
-        setupRecyclerView()
+        setup()
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -98,6 +127,10 @@ class SimpleNotification : AppCompatActivity() {
             for (notif: NotificationData in arr) {
                 updateList(notif)
             }
+
+            findViewById<TextView>(R.id.cavtive_notif_count)?.let {
+                it.text = "current active notifications count: ${arr.size}"
+            }
         })
     }
 
@@ -112,7 +145,20 @@ class SimpleNotification : AppCompatActivity() {
         Log.d("+++", "+++ --- exit updateList(), adapterNotificationDataList: ${adapterNotificationDataList.size}")
     }
 
+    var postingJob: Job? = null
     fun startNotify(view: View) {
+
+        if (postingJob != null) {
+            postingJob?.cancel()
+            postingJob = null
+            Log.e("+++", "+++ !!! startNotify() cancel")
+            return
+        }
+
+        NotificationManagerCompat.from(Utils.appContext).cancelAll()
+        findViewById<TextView>(R.id.cavtive_notif_count)?.let {
+            it.text = "current active notifications count:"
+        }
 
         if (!NotificationManagerCompat.from(this).areNotificationsEnabled()) {
             Utils.opnNotificationSettings(this, packageName)
@@ -127,36 +173,29 @@ class SimpleNotification : AppCompatActivity() {
             null
         )
 
-//        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-//
-//            val name = "Notifications channel 1"
-//            val descriptionText = "This is Channel 1 for notifications for ..."
-//            val importance = android.app.NotificationManager.IMPORTANCE_HIGH
-//            val channel = NotificationChannel(CHANNEL_ID_1, name, importance).apply {
-//                description = descriptionText
-//            }
-//            // Register the channel with the system
-//            val notificationManager: android.app.NotificationManager =
-//                this.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
-//            notificationManager.createNotificationChannel(channel)
-//        }
-
-        GlobalScope.launch {
-            //Log.e("+++", "+++ +++ +++ bf for (i: Int in 0..8)")
+        postingJob = GlobalScope.launch {
             val secureRandom = SecureRandom()
-            for (i: Int in 0..80) {
-                SystemClock.sleep(2000)
+            val pushCount = (findViewById<EditText>(R.id.total_post_count)?.text?.toString()?.toInt() ?: 80) - 1
+
+            for (i: Int in 0..pushCount) {
+                if (!this.isActive) {
+                    Log.e("+++", "+++ !!! startNotify() in lobalScope.launch, this.isActive == false, break")
+                    break
+                }
                 val notiItem = NotificationData(secureRandom.nextInt(999),
                     "title ${i+1}", "body: ${i+1}", System.currentTimeMillis())
-                sendNotificationToUser(this@SimpleNotification, notiItem)
-
+                if (sendNotificationToUser(this@SimpleNotification, notiItem)) {
+                    findViewById<TextView>(R.id.description)?.let {
+                        blinkView(it, Html.fromHtml("<b>${i+1} times</b> <i>posted to notification drawer</i>"))
+                    }
+                }
+                SystemClock.sleep(interval*2000)
             }
         }
-        //Log.e("+++", "+++ +++ after for (i: Int in 0..8)")
     }
 
 
-    fun sendNotificationToUser(context: Context, notiItem: NotificationData) {
+    private fun sendNotificationToUser(context: Context, notiItem: NotificationData): Boolean {
 
         //Check notification status
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -167,12 +206,12 @@ class SimpleNotification : AppCompatActivity() {
 
                 android.util.Log.e("+++", "+++ !!! sendNotificationToUser(), channel.importance == android.app.NotificationManager.IMPORTANCE_NONE")
                 Utils.opnNotificationSettings(this, packageName)
-                return
+                return false
             }
         } else {
             if (!NotificationManagerCompat.from(context).areNotificationsEnabled()) {
                 Utils.opnNotificationSettings(this, packageName)
-                return
+                return false
             }
         }
 
@@ -224,6 +263,8 @@ class SimpleNotification : AppCompatActivity() {
         Handler(Looper.getMainLooper()).postDelayed({
             updateActivNotifsInRV()
         }, 200)
+
+        return true
     }
 
     fun opnNotificationSettings(view: View) {

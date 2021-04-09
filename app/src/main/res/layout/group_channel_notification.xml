@@ -57,6 +57,7 @@
                 android:orientation="vertical">
 
                 <TextView
+                    android:id="@+id/txt_ga_c1"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text = "GROUP_A, CHANNEL_1"
@@ -68,7 +69,7 @@
                     android:layout_marginTop="3dp"
                     android:scrollbars="vertical"
 
-                    tools:itemCount="5"
+                    tools:itemCount="2"
                     tools:listitem="@layout/group_channel_notification_item">
 
                 </androidx.recyclerview.widget.RecyclerView>
@@ -81,6 +82,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
                 <TextView
+                    android:id="@+id/txt_ga_c2"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text = "GROUP_A, CHANNEL_2"
@@ -92,7 +94,7 @@
                     android:layout_marginTop="3dp"
                     android:scrollbars="vertical"
 
-                    tools:itemCount="5"
+                    tools:itemCount="2"
                     tools:listitem="@layout/group_channel_notification_item">
                 </androidx.recyclerview.widget.RecyclerView>
 
@@ -112,6 +114,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
                 <TextView
+                    android:id="@+id/txt_gb_c3"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text = "GROUP_B, CHANNEL_3"
@@ -123,7 +126,7 @@
                     android:layout_marginTop="3dp"
                     android:scrollbars="vertical"
 
-                    tools:itemCount="10"
+                    tools:itemCount="12"
                     tools:listitem="@layout/group_channel_notification_item">
                 </androidx.recyclerview.widget.RecyclerView>
 
@@ -136,6 +139,7 @@
                 android:orientation="vertical">
 
                 <TextView
+                    android:id="@+id/txt_gb_c4"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text = "GROUP_B, CHANNEL_4"
@@ -147,7 +151,7 @@
                     android:layout_marginTop="3dp"
                     android:scrollbars="vertical"
 
-                    tools:itemCount="10"
+                    tools:itemCount="2"
                     tools:listitem="@layout/group_channel_notification_item">
                 </androidx.recyclerview.widget.RecyclerView>
 
@@ -186,13 +190,37 @@
                 android:background="@drawable/rectanglebg"
                 android:orientation="vertical"
                 >
+                <LinearLayout
+                    android:id="@+id/strategy_tp1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="6dp"
+                    tools:background="#00ff00">
+                    <TextView
+                        android:id="@+id/total_post_txt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:layout_marginRight="8dp"
+                        android:text="How many round to send (4 pushes per round):"
+                        tools:background="#00ffff"/>
+                    <EditText
+                        android:id="@+id/total_post_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:maxLines="1"
+                        android:text="20"
+                        tools:background="#00ffff"
+                        />
+                </LinearLayout>
 
                 <LinearLayout
                     android:id="@+id/strategy_tp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="3dp"
                     tools:background="#00ff00">
                     <TextView
                         android:id="@+id/throttle_strategy_txt"
@@ -200,7 +228,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="8dp"
                         android:layout_marginRight="8dp"
-                        android:text="Max active notification count:"
+                        android:text="Max active notification count (if purge/replace):"
                         tools:background="#00ffff"/>
                     <EditText
                         android:id="@+id/max_active_notification_count"
@@ -259,14 +287,40 @@
                 android:textSize="16sp" />
         </RelativeLayout>
 
-        <Button
-            android:id="@+id/start_notify"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Start notify - 2 sec"
-            android:onClick="startNotify"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/typeSelectorRadioGroup" />
+            android:orientation="horizontal">
+            <Button
+                android:id="@+id/start_notify"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Start notify - 2 sec"
+                android:onClick="startNotify"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/typeSelectorRadioGroup" />
+            <EditText
+                android:id="@+id/interval"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_marginLeft="6dp"
+                android:layout_height="wrap_content"
+                android:hint="interval in sec"
+                android:inputType="number"
+                android:text="2"
+                />
+        </LinearLayout>
+
+<!--        -->
+
+<!--        <Button-->
+<!--            android:id="@+id/start_notify"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:text="Start notify - 2 sec"-->
+<!--            android:onClick="startNotify"-->
+<!--            app:layout_constraintStart_toStartOf="parent"-->
+<!--            app:layout_constraintTop_toBottomOf="@+id/typeSelectorRadioGroup" />-->
 
     </androidx.appcompat.widget.LinearLayoutCompat>
 

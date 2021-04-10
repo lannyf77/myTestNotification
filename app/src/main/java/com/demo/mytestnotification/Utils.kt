@@ -1,9 +1,6 @@
 package com.demo.mytestnotification
 
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationChannelGroup
-import android.app.NotificationManager
+import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -13,14 +10,19 @@ import android.provider.Settings
 import android.service.notification.StatusBarNotification
 import android.text.Spanned
 import android.util.Log
+import android.view.View
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
+import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
 import androidx.core.app.NotificationCompat.EXTRA_TEXT
 import androidx.core.app.NotificationCompat.EXTRA_TITLE
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat.getSystemService
+import java.security.SecureRandom
 import java.util.*
 import kotlin.Comparator
+import kotlin.collections.HashMap
 
 
 object Utils {
@@ -473,6 +475,39 @@ object Utils {
             }
             // Register the channel with the system
             notificationManager.createNotificationChannel(channel)
+        }
+    }
+    var globalId = 100000
+    val usedIds: HashMap<Int, Boolean> = HashMap(100)
+    val secureRandom = SecureRandom()
+    fun getNextNoitfyId(): Int {
+        var id = secureRandom.nextInt(999)
+        var loop = 0
+        while (usedIds.get(id) != null && loop < 1000) {
+            //Log.e("+++", "+++ !!! getNextNoitfyId() clash, $id, at loop: $loop")
+            id = secureRandom.nextInt(999)
+            loop++
+        }
+        if (loop >= 1000) {
+            id = globalId++
+            usedIds.put(id, true)
+        }
+        return id
+//            .also {
+//                Log.e("+++", "+++ !!! getNextNoitfyId() ret: $id")
+//            }
+    }
+    fun resetNoitfyIdMap() {
+        usedIds.clear()
+    }
+
+    fun closeKeyboard(context: Activity) {
+        context.currentFocus?.let { view ->
+            (context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager)?.let { imm ->
+                if(imm.isAcceptingText) {
+                    imm.hideSoftInputFromWindow(view.windowToken, 0)
+                }
+            }
         }
     }
 }

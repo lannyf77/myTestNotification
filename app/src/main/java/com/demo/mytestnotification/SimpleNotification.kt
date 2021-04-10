@@ -24,6 +24,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.demo.mytestnotification.Utils.CHANNEL_ID_1
 import com.demo.mytestnotification.Utils.blinkView
 import com.demo.mytestnotification.Utils.deleteAllNotificationGroups
+import com.demo.mytestnotification.Utils.getNextNoitfyId
 import com.demo.mytestnotification.Utils.maxActiveNoticicationAllowd
 import com.demo.mytestnotification.Utils.notifyWithPurgeLatestFirst
 import com.demo.mytestnotification.Utils.notifyWithReplaceLatestFirst
@@ -142,17 +143,22 @@ class SimpleNotification : AppCompatActivity() {
         val notiSize = (recyclerView.adapter?.itemCount) ?: adapterNotificationDataList.size
         recyclerView.scrollToPosition(notiSize - 1);
 
-        Log.d("+++", "+++ --- exit updateList(), adapterNotificationDataList: ${adapterNotificationDataList.size}")
+        //Log.d("+++", "+++ --- exit updateList(), adapterNotificationDataList: ${adapterNotificationDataList.size}")
     }
 
     var postingJob: Job? = null
     fun startNotify(view: View) {
-
+        Utils.closeKeyboard(this)
         if (postingJob != null) {
             postingJob?.cancel()
             postingJob = null
+            setNotifyButtonText()
             Log.e("+++", "+++ !!! startNotify() cancel")
             return
+        }
+
+        findViewById<Button>(R.id.start_notify)?.let {
+            it.text = "Tap to stop notify"
         }
 
         NotificationManagerCompat.from(Utils.appContext).cancelAll()
@@ -174,7 +180,7 @@ class SimpleNotification : AppCompatActivity() {
         )
 
         postingJob = GlobalScope.launch {
-            val secureRandom = SecureRandom()
+            Utils.resetNoitfyIdMap()
             val pushCount = (findViewById<EditText>(R.id.total_post_count)?.text?.toString()?.toInt() ?: 80) - 1
 
             for (i: Int in 0..pushCount) {
@@ -182,7 +188,7 @@ class SimpleNotification : AppCompatActivity() {
                     Log.e("+++", "+++ !!! startNotify() in lobalScope.launch, this.isActive == false, break")
                     break
                 }
-                val notiItem = NotificationData(secureRandom.nextInt(999),
+                val notiItem = NotificationData(getNextNoitfyId(),
                     "title ${i+1}", "body: ${i+1}", System.currentTimeMillis())
                 if (sendNotificationToUser(this@SimpleNotification, notiItem)) {
                     findViewById<TextView>(R.id.description)?.let {

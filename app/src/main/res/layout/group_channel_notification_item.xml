@@ -50,7 +50,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="6dp"
-                android:textSize="9sp"
+                android:textSize="16sp"
                 android:textColor="#ff0000"
                 android:text="id: 88"/>
 

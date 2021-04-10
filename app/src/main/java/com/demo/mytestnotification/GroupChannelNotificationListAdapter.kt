@@ -1,5 +1,6 @@
 package com.demo.mytestnotification
 
+import android.text.Html
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -55,7 +56,7 @@ class GroupChannelAdapter(dataList: ArrayList<NotificationData>,
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
 
         val notifItem = dataSet[position]
-        viewHolder.id.text = "id: "+notifItem.id.toString()
+        viewHolder.id.text = Html.fromHtml("<b>id: ${notifItem.id.toString()}</b>")
         viewHolder.grp_channel_id.text = ", [${notifItem.time}]"
         viewHolder.content.text = "${notifItem.title}, ${notifItem.body}"
 
@@ -66,14 +67,11 @@ class GroupChannelAdapter(dataList: ArrayList<NotificationData>,
         //viewHolder.img
 
 
-        android.util.Log.v("+++", "+++ onBindViewHolder($position, ${dataSet[position].toString()}), $groupId, $channelId")
+        //android.util.Log.v("+++", "+++ onBindViewHolder($position, ${dataSet[position].toString()}), $groupId, $channelId")
     }
 
     // Return the size of your dataset (invoked by the layout manager)
     override fun getItemCount() = dataSet.size
-        .also {
-            android.util.Log.v("+++", "+++ getItemCount() ret: $it, $groupId, $channelId")
-        }
 
     fun updateChannleBk(viewHolder: ViewHolder, notiItem: NotificationData) {
         notiItem.channelId?.let {

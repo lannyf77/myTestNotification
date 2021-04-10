@@ -24,8 +24,10 @@ import com.demo.mytestnotification.Utils.CHANNEL_ID_3
 import com.demo.mytestnotification.Utils.CHANNEL_ID_4
 import com.demo.mytestnotification.Utils.GROUP_A
 import com.demo.mytestnotification.Utils.GROUP_B
+import com.demo.mytestnotification.Utils.closeKeyboard
 import com.demo.mytestnotification.Utils.createChannel
 import com.demo.mytestnotification.Utils.deleteAllNotificationGroups
+import com.demo.mytestnotification.Utils.getNextNoitfyId
 import com.demo.mytestnotification.Utils.maxActiveNoticicationAllowd
 import com.demo.mytestnotification.Utils.notifyWithPurgeLatestFirst
 import com.demo.mytestnotification.Utils.notifyWithReplaceLatestFirst
@@ -198,16 +200,22 @@ class GroupChannelNotification : AppCompatActivity() {
         val notiSize = (recyclerView.adapter?.itemCount) ?: adapterNotificationDataList.size
         recyclerView.scrollToPosition(notiSize - 1);
 
-        Log.d("+++", "+++ --- exit updateList(), adapterNotificationDataList: ${adapterNotificationDataList.size}")
+        //Log.d("+++", "+++ --- exit updateList(), adapterNotificationDataList: ${adapterNotificationDataList.size}")
     }
 
     var postingJob: Job? = null
     fun startNotify(view: View) {
+        closeKeyboard(this)
         if (postingJob != null) {
             postingJob?.cancel()
             postingJob = null
+            setNotifyButtonText()
             Log.e("+++", "+++ !!! startNotify() cancel")
             return
+        }
+
+        findViewById<Button>(R.id.start_notify)?.let {
+            it.text = "Tap to stop notify"
         }
 
         clearRvs()
@@ -243,7 +251,7 @@ class GroupChannelNotification : AppCompatActivity() {
     }
 
     fun startNotifToChannel(baseIndx: Int) {
-        val secureRandom = SecureRandom()
+        Utils.resetNoitfyIdMap()
         for (i: Int in 0..3) {
 
             if (postingJob == null) {
@@ -258,7 +266,7 @@ class GroupChannelNotification : AppCompatActivity() {
                 3 -> Triple(GROUP_B, CHANNEL_ID_4, R.id.txt_gb_c4)
                 else -> Triple(GROUP_A, CHANNEL_ID_1, R.id.txt_ga_c1)
             }
-            val notiItem = NotificationData(secureRandom.nextInt(99999),
+            val notiItem = NotificationData(getNextNoitfyId(),
                 "title ${i+1}$baseIndx", "body: ${i+1}$baseIndx", System.currentTimeMillis(), Group_Channel.second, Group_Channel.first )
 
             Log.e("+++", "+++ startNotifToChannel($baseIndx, $i, (((baseIndx * 4)  + i) + 1):${((baseIndx * 4)  + i) + 1}), $notiItem")

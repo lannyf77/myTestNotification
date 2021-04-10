@@ -211,6 +211,7 @@
                         android:layout_height="wrap_content"
                         android:maxLines="1"
                         android:text="20"
+                        android:inputType="number"
                         tools:background="#00ffff"
                         />
                 </LinearLayout>
@@ -235,6 +236,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:maxLines="1"
+                        android:inputType="number"
                         android:text="5"
                         tools:background="#00ffff"
                         />

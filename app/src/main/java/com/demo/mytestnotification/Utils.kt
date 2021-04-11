@@ -315,8 +315,7 @@ object Utils {
             for (channleId in chanelIdOrderList) {
                 laetsNofifyByChannelOrder = findLatestNotifInChannel(activeNotifFilterOutGroup, channleId)
                 if (laetsNofifyByChannelOrder != null) {
-                    NotificationManagerCompat.from(appContext).cancel(laetsNofifyByChannelOrder.id)
-
+                    doCancelActiveNotifyByIdAndTag(laetsNofifyByChannelOrder.id, null)
                     Log.e("+++", "+++ !!! notifyWithPurgeLatestFirstAganistChannelOrder(), notification?.channelId: ${channleId}, cancel(${laetsNofifyByChannelOrder.id}), ")
 
                     break
@@ -328,23 +327,7 @@ object Utils {
 
                 for (i in activeNotifFilterOutGroup.size - 1 downTo maxActiveNoticicationAllowd - 1) {
                     val activeNotification = activeNotifFilterOutGroup[i]
-                    if (activeNotification.tag !== "ranker_group") {
-                        NotificationManagerCompat.from(appContext).cancel(activeNotification.id)
-                    }
-                    val notification: Notification = activeNotification.notification
-                    val body: String = notification.extras.getString(
-                        EXTRA_TEXT,
-                        "no found by key android.text"
-                    ) //com.oath.mobile.shadowfax.demo.MsgString
-
-                    Log.v(
-                        "+++", "+++ [" + i + "]: id: " + activeNotification.id +
-                                ", tag:" + activeNotification.tag +
-                                ", getPackageName:" + activeNotification.packageName +
-                                ", getPostTime:" + activeNotification.postTime +
-                                ", body:" + body +
-                                ", getUser:" + activeNotification.user
-                    )
+                    doCancelActiveNoification(activeNotification, i)
                 }
             }
         }
@@ -370,22 +353,7 @@ object Utils {
         if (activeNotifFilterOutGroup.size > maxActiveNoticicationAllowd - 1) {
             for (i in activeNotifFilterOutGroup.size - 1 downTo maxActiveNoticicationAllowd - 1) {
                 val activeNotification = activeNotifFilterOutGroup[i]
-                if (activeNotification.tag !== "ranker_group") {
-                    NotificationManagerCompat.from(appContext).cancel(activeNotification.id)
-                }
-                val notification: Notification = activeNotification.notification
-                val body: String = notification.extras.getString(
-                    EXTRA_TEXT,
-                    "no found by key android.text"
-                ) //com.oath.mobile.shadowfax.demo.MsgString
-                Log.v(
-                    "+++", "+++ [" + i + "]: id: " + activeNotification.id +
-                            ", tag:" + activeNotification.tag +
-                            ", getPackageName:" + activeNotification.packageName +
-                            ", getPostTime:" + activeNotification.postTime +
-                            ", body:" + body +
-                            ", getUser:" + activeNotification.user
-                )
+                doCancelActiveNoification(activeNotification, i)
             }
         }
 
@@ -413,7 +381,7 @@ object Utils {
             for (i in activeNotifFilterOutGroup.size - 1 downTo maxActiveNoticicationAllowd - 1) {
                 val activeNotification = activeNotifFilterOutGroup[i]
                 if (activeNotification.tag !== "ranker_group") {
-                    NotificationManagerCompat.from(appContext).cancel(activeNotification.id)
+                    doCancelActiveNotifyByIdAndTag(activeNotification.id, null)
                     useThisId = activeNotification.id
 
                     val notification: Notification = activeNotification.notification
@@ -508,22 +476,7 @@ object Utils {
                 if (toBeSorted.size > maxActiveNoticicationAllowd) {
                     for (i in toBeSorted.size - 1 downTo maxActiveNoticicationAllowd) {
                         val activeNotification = toBeSorted[i]
-                        if (activeNotification.tag !== "ranker_group") {
-                            NotificationManagerCompat.from(appContext).cancel(activeNotification.id)
-                        }
-                        val notification: Notification = activeNotification.notification
-                        val body: String = notification.extras.getString(
-                            EXTRA_TEXT,
-                            "no found by key android.text"
-                        ) //com.oath.mobile.shadowfax.demo.MsgString
-                        Log.v(
-                            "+++", "+++ [" + i + "]: id: " + activeNotification.id +
-                                    ", tag:" + activeNotification.tag +
-                                    ", getPackageName:" + activeNotification.packageName +
-                                    ", getPostTime:" + activeNotification.postTime +
-                                    ", body:" + body +
-                                    ", getUser:" + activeNotification.user
-                        )
+                        doCancelActiveNoification(activeNotification, i)
                     }
                 }
             } catch (e: Exception) {
@@ -676,5 +629,28 @@ object Utils {
                 }
             }
         }
+    }
+
+    private fun doCancelActiveNoification(activeNotification: StatusBarNotification, i: Int) {
+        if (activeNotification.tag !== "ranker_group") {
+            doCancelActiveNotifyByIdAndTag(activeNotification.id, null)
+        }
+        val notification: Notification = activeNotification.notification
+        val body: String = notification.extras.getString(
+            EXTRA_TEXT,
+            "no found by key android.text"
+        )
+        Log.v(
+            "+++", "+++ [" + i + "]: id: " + activeNotification.id +
+                    ", tag:" + activeNotification.tag +
+                    ", getPackageName:" + activeNotification.packageName +
+                    ", getPostTime:" + activeNotification.postTime +
+                    ", body:" + body +
+                    ", getUser:" + activeNotification.user
+        )
+    }
+
+    private fun doCancelActiveNotifyByIdAndTag(id: Int, tag: String?) {
+        NotificationManagerCompat.from(appContext).cancel(tag, id)
     }
 }

@@ -187,7 +187,7 @@ class SimpleNotification : AppCompatActivity() {
             CHANNEL_ID_1,
             "Notifications channel 1",
             "This is Channel 1 for notifications for ...",
-            NotificationManager.IMPORTANCE_HIGH,
+            NotificationManager.IMPORTANCE_HIGH, //NotificationManager.IMPORTANCE_LOW, //NotificationManager.IMPORTANCE_HIGH,
             null
         )
 

@@ -221,14 +221,16 @@
                     android:orientation="horizontal"
                     android:layout_marginTop="6dp"
                     tools:background="#00ff00">
+
                     <TextView
                         android:id="@+id/total_post_txt"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="8dp"
                         android:layout_marginRight="8dp"
+                        android:layout_marginBottom="8dp"
                         android:text="How many round to send (4 pushes per round):"
-                        tools:background="#00ffff"/>
+                        tools:background="#00ffff" />
+
                     <EditText
                         android:id="@+id/total_post_count"
                         android:layout_width="wrap_content"
@@ -307,7 +309,8 @@
                     android:gravity="fill_horizontal"
                     android:orientation="horizontal"
                     tools:background="#ff00ff"
-                    android:visibility="gone">
+                    android:visibility="gone"
+                    tools:visibility="visible">
 
                     <RadioButton
                         android:id="@+id/pure_order_none"
@@ -315,14 +318,14 @@
                         android:layout_height="wrap_content"
                         android:layout_marginRight="3dp"
                         android:checked="true"
-                        android:text="None" />
+                        android:text="Purge the oldest" />
 
                     <RadioButton
                         android:id="@+id/pure_oder_by_channel"
                         android:layout_width="0dp"
                         android:layout_weight="1"
                         android:layout_height="wrap_content"
-                        android:text="Purge order by channel 1,2,3,4" />
+                        android:text="by channel order 1,2,3,4" />
 
                 </RadioGroup>
             </LinearLayout>

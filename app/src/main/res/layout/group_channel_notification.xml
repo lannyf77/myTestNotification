@@ -17,7 +17,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="3dp"
         android:layout_marginEnd="20dp"
         android:onClick="opnNotificationSettings"
         android:src="@drawable/ic_settings"
@@ -37,7 +37,7 @@
         app:layout_constraintBottom_toTopOf="@+id/throttle_strategy"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHeight_max="520dp"
-        app:layout_constraintHeight_min="280dp"
+        app:layout_constraintHeight_min="320dp"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
 
@@ -296,6 +296,33 @@
                         android:layout_weight="1"
                         android:layout_height="wrap_content"
                         android:text="Replace oldest" />
+
+                </RadioGroup>
+
+                <RadioGroup
+                    android:id="@+id/pureModeRadioGroup"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="2dp"
+                    android:gravity="fill_horizontal"
+                    android:orientation="horizontal"
+                    tools:background="#ff00ff"
+                    android:visibility="gone">
+
+                    <RadioButton
+                        android:id="@+id/pure_order_none"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginRight="3dp"
+                        android:checked="true"
+                        android:text="None" />
+
+                    <RadioButton
+                        android:id="@+id/pure_oder_by_channel"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:text="Purge order by channel 1,2,3,4" />
 
                 </RadioGroup>
             </LinearLayout>

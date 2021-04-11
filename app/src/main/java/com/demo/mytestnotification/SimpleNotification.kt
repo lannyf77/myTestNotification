@@ -134,7 +134,7 @@ class SimpleNotification : AppCompatActivity() {
             }
 
             findViewById<TextView>(R.id.cavtive_notif_count)?.let {
-                it.text = "current active notifications count: ${arr.size}"
+                it.text = Html.fromHtml("current active notifications count: <b><font color=\"#ff0000\">${arr.size}</font></b>")
             }
         })
     }
@@ -148,6 +148,14 @@ class SimpleNotification : AppCompatActivity() {
         recyclerView.scrollToPosition(notiSize - 1);
 
         //Log.d("+++", "+++ --- exit updateList(), adapterNotificationDataList: ${adapterNotificationDataList.size}")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (postingJob != null) {
+            postingJob?.cancel()
+            postingJob = null
+        }
     }
 
     var postingJob: Job? = null
@@ -196,7 +204,7 @@ class SimpleNotification : AppCompatActivity() {
                     "title ${i+1}", "body: ${i+1}", System.currentTimeMillis())
                 if (sendNotificationToUser(this@SimpleNotification, notiItem)) {
                     findViewById<TextView>(R.id.description)?.let {
-                        blinkView(it, Html.fromHtml("<b>${i+1} times</b> <i>posted to notification drawer</i>"))
+                        blinkView(it, Html.fromHtml("<b><font color=\"#ff0000\">${i+1} times</font></b> <i>posted to notification drawer</i>"))
                     }
                 }
                 SystemClock.sleep(interval*2000)

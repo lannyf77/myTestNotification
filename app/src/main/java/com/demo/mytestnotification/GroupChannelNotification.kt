@@ -30,6 +30,7 @@ import com.demo.mytestnotification.Utils.createChannel
 import com.demo.mytestnotification.Utils.deleteAllNotificationGroups
 import com.demo.mytestnotification.Utils.getNextNoitfyId
 import com.demo.mytestnotification.Utils.maxActiveNoticicationAllowd
+import com.demo.mytestnotification.Utils.notifyWithPurgeLatestFirst
 import com.demo.mytestnotification.Utils.notifyWithPurgeLatestFirstAganistChannelOrder
 import com.demo.mytestnotification.Utils.notifyWithReplaceLatestFirst
 import kotlinx.coroutines.GlobalScope
@@ -134,10 +135,33 @@ class GroupChannelNotification : AppCompatActivity() {
         updateActivNotifsInRV()
     }
 
+    private var purgeOrderByChannelList = false
     override fun onResume() {
         super.onResume()
+        val purgeModeRdGrup = findViewById<RadioGroup>(R.id.pureModeRadioGroup)
+        purgeModeRdGrup?.setOnCheckedChangeListener { group, checkedId ->
+            purgeOrderByChannelList = when(checkedId) {
+                R.id.pure_oder_by_channel -> {
+                    true
+                }
+                else -> {
+                    false
+                }
+            }
+        }
         findViewById<RadioGroup>(R.id.typeSelectorRadioGroup)?.setOnCheckedChangeListener { group, checkedId ->
             NotificationManagerCompat.from(Utils.appContext).cancelAll()
+            purgeModeRdGrup?.apply {
+                val visibility = when(checkedId) {
+                    R.id.strategy_purge -> {
+                        View.VISIBLE
+                    }
+                    else -> {
+                        View.GONE
+                    }
+                }
+                this.visibility = visibility
+            }
         }
     }
 
@@ -213,12 +237,9 @@ class GroupChannelNotification : AppCompatActivity() {
         }
         rvTriple?.let {
             updateList(rvTriple.first, rvTriple.second, notifDataMy)
-
-            ///
             findViewById<TextView>(rvTriple.third)?.let {
-                Utils.blinkView(it, Html.fromHtml("<b>${channelId}</b> has active notif: ${rvTriple.first.size}"))
+                Utils.blinkView(it, Html.fromHtml("<b>${channelId}</b> has active notif: <b><font color=\"#ff0000\">${rvTriple.first.size}</font></b>"))
             }
-            ///
         }
     }
 
@@ -232,6 +253,14 @@ class GroupChannelNotification : AppCompatActivity() {
         recyclerView.scrollToPosition(notiSize - 1)
 
         //Log.d("+++", "+++ --- exit updateList(), adapterNotificationDataList: ${adapterNotificationDataList.size}")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (postingJob != null) {
+            postingJob?.cancel()
+            postingJob = null
+        }
     }
 
     var postingJob: Job? = null
@@ -306,7 +335,7 @@ class GroupChannelNotification : AppCompatActivity() {
             Log.e("+++", "+++ startNotifToChannel($baseIndx, $i, (((baseIndx * 4)  + i) + 1):${((baseIndx * 4)  + i) + 1}), $notiItem")
             if (sendNotificationToUser(this@GroupChannelNotification, Group_Channel.second, notiItem)) {
                 findViewById<TextView>(Group_Channel.third)?.let {
-                    Utils.blinkView(it, Html.fromHtml("<b>${((baseIndx * 4)  + i) + 1}th push (${notiItem.title})</b> <i>posted to drawer</i>"))
+                    Utils.blinkView(it, Html.fromHtml("<b><font color=\"#ff0000\">${((baseIndx * 4)  + i) + 1}</font> push (${notiItem.title})</b> <i>to drawer</i>"))
                 }
             }
             SystemClock.sleep(interval*2000)
@@ -395,8 +424,11 @@ class GroupChannelNotification : AppCompatActivity() {
         maxActiveNoticicationAllowd = findViewById<EditText>(R.id.max_active_notification_count)?.text?.toString()?.toInt() ?: 5
         when(findViewById<RadioGroup>(R.id.typeSelectorRadioGroup)?.checkedRadioButtonId){
             R.id.strategy_purge -> {
-                notifyWithPurgeLatestFirstAganistChannelOrder(context, theId, builder.build())
-                //notifyWithPurgeLatestFirst(context, theId, builder.build())
+                if (purgeOrderByChannelList) {
+                    notifyWithPurgeLatestFirstAganistChannelOrder(context, theId, builder.build())
+                } else {
+                    notifyWithPurgeLatestFirst(context, theId, builder.build())
+                }
             }
             R.id.strategy_replace -> {
                 notifyWithReplaceLatestFirst(context, theId, builder.build())

@@ -16,7 +16,6 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.text.isDigitsOnly
 import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -32,7 +31,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import java.security.SecureRandom
 
 
 class SimpleNotification : AppCompatActivity() {
@@ -40,7 +38,7 @@ class SimpleNotification : AppCompatActivity() {
     private lateinit var notificationManager: NotificationManagerCompat
 
     lateinit var recyclerView: RecyclerView
-    var adapterNotificationDataList = arrayListOf<NotificationData>()
+    var adapterNotificationDataList = arrayListOf<MyNotificationData>()
 
     init {
         Log.i("+++", "+++ SimpleNotification::init{}, $this")
@@ -59,10 +57,16 @@ class SimpleNotification : AppCompatActivity() {
             }
         }
     }
+
     private fun setNotifyButtonText() {
-        interval = ((findViewById<EditText>(R.id.interval)?.text?.toString()?.toIntOrNull() ?: 0)).toLong()
-        findViewById<Button>(R.id.start_notify)?.let {
-            it.text = "Start notify - $interval sec"
+        val intervalEditTxt = findViewById<EditText>(R.id.interval)
+        intervalEditTxt?.let {
+            interval = (it.text?.toString()?.toLongOrNull() ?: 0)//.toLong()
+            intervalEditTxt.post {
+                findViewById<Button>(R.id.start_notify)?.apply {
+                    text = "Start notify - $interval sec"
+                }
+            }
         }
     }
 
@@ -125,7 +129,7 @@ class SimpleNotification : AppCompatActivity() {
         runOnUiThread(Runnable() {
             val arr = Utils.getActiveNotification().first
             Log.d("+++", "+++ updateActivNotifsInRV(), arr.size: ${arr.size}")
-            for (notif: NotificationData in arr) {
+            for (notif: MyNotificationData in arr) {
                 updateList(notif)
             }
 
@@ -135,9 +139,9 @@ class SimpleNotification : AppCompatActivity() {
         })
     }
 
-    private fun updateList(notifData: NotificationData) {
+    private fun updateList(notifDataMy: MyNotificationData) {
 
-        adapterNotificationDataList.add(notifData)
+        adapterNotificationDataList.add(notifDataMy)
 
         (recyclerView.adapter as? CustomAdapter)?.updateList(adapterNotificationDataList)
         val notiSize = (recyclerView.adapter?.itemCount) ?: adapterNotificationDataList.size
@@ -188,7 +192,7 @@ class SimpleNotification : AppCompatActivity() {
                     Log.e("+++", "+++ !!! startNotify() in lobalScope.launch, this.isActive == false, break")
                     break
                 }
-                val notiItem = NotificationData(getNextNoitfyId(),
+                val notiItem = MyNotificationData(getNextNoitfyId(),
                     "title ${i+1}", "body: ${i+1}", System.currentTimeMillis())
                 if (sendNotificationToUser(this@SimpleNotification, notiItem)) {
                     findViewById<TextView>(R.id.description)?.let {
@@ -197,11 +201,14 @@ class SimpleNotification : AppCompatActivity() {
                 }
                 SystemClock.sleep(interval*2000)
             }
+            postingJob?.cancel()
+            postingJob = null
+            setNotifyButtonText()
         }
     }
 
 
-    private fun sendNotificationToUser(context: Context, notiItem: NotificationData): Boolean {
+    private fun sendNotificationToUser(context: Context, notiItem: MyNotificationData): Boolean {
 
         //Check notification status
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

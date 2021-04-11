@@ -14,12 +14,12 @@ import com.demo.mytestnotification.Utils.CHANNEL_ID_2
 import com.demo.mytestnotification.Utils.CHANNEL_ID_3
 import com.demo.mytestnotification.Utils.CHANNEL_ID_4
 
-class GroupChannelAdapter(dataList: ArrayList<NotificationData>,
-    val groupId: String, val channelId: String) : RecyclerView.Adapter<GroupChannelAdapter.ViewHolder>() {
+class GroupChannelAdapter(dataListMy: ArrayList<MyNotificationData>,
+                          val groupId: String, val channelId: String) : RecyclerView.Adapter<GroupChannelAdapter.ViewHolder>() {
 
-    var dataSet: ArrayList<NotificationData> = arrayListOf<NotificationData>()
+    var dataSetMy: ArrayList<MyNotificationData> = arrayListOf<MyNotificationData>()
     init {
-        dataSet.addAll(dataList)
+        dataSetMy.addAll(dataListMy)
     }
     /**
      * Provide a reference to the type of views that you are using
@@ -34,13 +34,13 @@ class GroupChannelAdapter(dataList: ArrayList<NotificationData>,
         val oldestTxt: TextView = view.findViewById(R.id.oldest_float_txt)
     }
 
-    fun updateList(data: ArrayList<NotificationData>) {
-        android.util.Log.i("+++", "+++ enter updateList(${data.size}), $groupId, $channelId")
-        dataSet.clear()
+    fun updateList(data: ArrayList<MyNotificationData>) {
+        android.util.Log.i("+++", "+++ !!! enter updateList(${data.size}), $groupId, $channelId")
+        dataSetMy.clear()
         notifyDataSetChanged()
-        dataSet.addAll(data)
+        dataSetMy.addAll(data)
         notifyDataSetChanged()
-        android.util.Log.i("+++", "+++ --- exit updateList(${data.size})")
+        android.util.Log.i("+++", "+++ !!! --- exit updateList(${data.size})")
     }
 
     // Create new views (invoked by the layout manager)
@@ -55,10 +55,10 @@ class GroupChannelAdapter(dataList: ArrayList<NotificationData>,
     // Replace the contents of a view (invoked by the layout manager)
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
 
-        val notifItem = dataSet[position]
+        val notifItem = dataSetMy[position]
         viewHolder.id.text = Html.fromHtml("<b>id: ${notifItem.id.toString()}</b>")
-        viewHolder.grp_channel_id.text = ", [${notifItem.time}]"
-        viewHolder.content.text = "${notifItem.title}, ${notifItem.body}"
+        viewHolder.grp_channel_id.text = Html.fromHtml(" [<b>${notifItem.time}</b>]")
+        viewHolder.content.text = Html.fromHtml("<b>${notifItem.title}</b><br>${notifItem.body}</br>")
 
         viewHolder.oldestTxt.visibility = if (notifItem.oldest) View.VISIBLE else View.GONE
 
@@ -71,9 +71,9 @@ class GroupChannelAdapter(dataList: ArrayList<NotificationData>,
     }
 
     // Return the size of your dataset (invoked by the layout manager)
-    override fun getItemCount() = dataSet.size
+    override fun getItemCount() = dataSetMy.size
 
-    fun updateChannleBk(viewHolder: ViewHolder, notiItem: NotificationData) {
+    fun updateChannleBk(viewHolder: ViewHolder, notiItem: MyNotificationData) {
         notiItem.channelId?.let {
             val cl = when (it) {
                 CHANNEL_ID_1 -> {

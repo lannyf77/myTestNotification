@@ -24,18 +24,18 @@ import com.demo.mytestnotification.Utils.CHANNEL_ID_3
 import com.demo.mytestnotification.Utils.CHANNEL_ID_4
 import com.demo.mytestnotification.Utils.GROUP_A
 import com.demo.mytestnotification.Utils.GROUP_B
+import com.demo.mytestnotification.Utils.chanelIdOrderList
 import com.demo.mytestnotification.Utils.closeKeyboard
 import com.demo.mytestnotification.Utils.createChannel
 import com.demo.mytestnotification.Utils.deleteAllNotificationGroups
 import com.demo.mytestnotification.Utils.getNextNoitfyId
 import com.demo.mytestnotification.Utils.maxActiveNoticicationAllowd
-import com.demo.mytestnotification.Utils.notifyWithPurgeLatestFirst
+import com.demo.mytestnotification.Utils.notifyWithPurgeLatestFirstAganistChannelOrder
 import com.demo.mytestnotification.Utils.notifyWithReplaceLatestFirst
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import java.security.SecureRandom
 
 
 class GroupChannelNotification : AppCompatActivity() {
@@ -46,10 +46,10 @@ class GroupChannelNotification : AppCompatActivity() {
     lateinit var recyclerViewGaC2: RecyclerView
     lateinit var recyclerViewGbC3: RecyclerView
     lateinit var recyclerViewGbC4: RecyclerView
-    var adapterNotificationDataListGaC1 = arrayListOf<NotificationData>()
-    var adapterNotificationDataListGaC2 = arrayListOf<NotificationData>()
-    var adapterNotificationDataListGbC3 = arrayListOf<NotificationData>()
-    var adapterNotificationDataListGbC4 = arrayListOf<NotificationData>()
+    var adapterNotificationDataListGaC1 = arrayListOf<MyNotificationData>()
+    var adapterNotificationDataListGaC2 = arrayListOf<MyNotificationData>()
+    var adapterNotificationDataListGbC3 = arrayListOf<MyNotificationData>()
+    var adapterNotificationDataListGbC4 = arrayListOf<MyNotificationData>()
 
     init {
         Log.i("+++", "+++ GroupChannelNotification::init{}, $this")
@@ -57,7 +57,6 @@ class GroupChannelNotification : AppCompatActivity() {
         createNotificationChannels()
     }
 
-    ///
     var interval: Long = 2
     private fun setupNotifyInterval() {
         setNotifyButtonText()
@@ -69,10 +68,16 @@ class GroupChannelNotification : AppCompatActivity() {
             }
         }
     }
+
     private fun setNotifyButtonText() {
-        interval = ((findViewById<EditText>(R.id.interval)?.text?.toString()?.toIntOrNull() ?: 0)).toLong()
-        findViewById<Button>(R.id.start_notify)?.let {
-            it.text = "Start notify - $interval sec"
+        val intervalEditTxt = findViewById<EditText>(R.id.interval)
+        intervalEditTxt?.let {
+            interval = (it.text?.toString()?.toLongOrNull() ?: 0)//.toLong()
+            intervalEditTxt.post {
+                findViewById<Button>(R.id.start_notify)?.apply {
+                    text = "Start notify - $interval sec"
+                }
+            }
         }
     }
 
@@ -84,8 +89,6 @@ class GroupChannelNotification : AppCompatActivity() {
         setupNotifyInterval()
         setupRecyclerView()
     }
-    ///
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -117,10 +120,10 @@ class GroupChannelNotification : AppCompatActivity() {
 
     }
 
-    private fun setupRecyclerView(recyclerView: RecyclerView, dataList: ArrayList<NotificationData>,
+    private fun setupRecyclerView(recyclerView: RecyclerView, dataListMy: ArrayList<MyNotificationData>,
                                   groupId: String, channelId: String) {
         recyclerView.setLayoutManager(LinearLayoutManager(this))
-        recyclerView.adapter = GroupChannelAdapter(dataList, groupId, channelId)
+        recyclerView.adapter = GroupChannelAdapter(dataListMy, groupId, channelId)
         recyclerView.addItemDecoration(DividerItemDecoration(this, LinearLayoutManager.VERTICAL))
     }
 
@@ -159,46 +162,74 @@ class GroupChannelNotification : AppCompatActivity() {
         runOnUiThread(Runnable() {
             val arr = Utils.getActiveNotification().first
 
-            for (notif: NotificationData in arr) {
-                Log.d("+++", "+++ updateActivNotifsInRV(), $notif,  arr.size: ${arr.size}")
+            val channelIdMap: HashMap<String, Boolean> = HashMap<String, Boolean>().apply {
+                for (item in chanelIdOrderList) {
+                    put(item, false)
+                }
+            }
+            for (notif: MyNotificationData in arr) {
+                Log.d("+++", "+++ !!! updateActivNotifsInRV(${notif.channelId}), $notif,  arr.size: ${arr.size}")
                 notif.channelId?.let {
                     updateListByChannelId(notif.channelId, notif)
+                    channelIdMap.put(notif.channelId, true)
+                }
+            }
+            //for empty rv list
+            for ((channelId, value) in channelIdMap) {
+                if (!value) {
+                    updateListByChannelId(channelId, null)
+
+                    val Group_Channel = when(channelId) {
+                        CHANNEL_ID_1 -> Triple(GROUP_A, CHANNEL_ID_1, R.id.txt_ga_c1)
+                        CHANNEL_ID_1 -> Triple(GROUP_A, CHANNEL_ID_2, R.id.txt_ga_c2)
+                        CHANNEL_ID_1 -> Triple(GROUP_B, CHANNEL_ID_3, R.id.txt_gb_c3)
+                        CHANNEL_ID_1 -> Triple(GROUP_B, CHANNEL_ID_4, R.id.txt_gb_c4)
+                        else -> Triple(GROUP_A, CHANNEL_ID_1, R.id.txt_ga_c1)
+                    }
                 }
             }
         })
     }
 
-    private fun updateListByChannelId(channelId: String, notifData: NotificationData) {
+    private fun updateListByChannelId(channelId: String, notifDataMy: MyNotificationData?) {
 
-        val rvPair = when (channelId) {
+        val rvTriple = when (channelId) {
             CHANNEL_ID_1 -> {
-                Pair(adapterNotificationDataListGaC1, recyclerViewGaC1)
+                Triple(adapterNotificationDataListGaC1, recyclerViewGaC1, R.id.txt_ga_c1_count)
             }
             CHANNEL_ID_2 -> {
-                Pair(adapterNotificationDataListGaC2, recyclerViewGaC2)
+                Triple(adapterNotificationDataListGaC2, recyclerViewGaC2, R.id.txt_ga_c2_count)
             }
             CHANNEL_ID_3 -> {
-                Pair(adapterNotificationDataListGbC3, recyclerViewGbC3)
+                Triple(adapterNotificationDataListGbC3, recyclerViewGbC3, R.id.txt_gb_c3_count)
             }
             CHANNEL_ID_4 -> {
-                Pair(adapterNotificationDataListGbC4, recyclerViewGbC4)
+                Triple(adapterNotificationDataListGbC4, recyclerViewGbC4, R.id.txt_gb_c4_count)
             }
             else -> {
                 Log.e("+++", "+++ !!! updateListByChannelId() wrong channelId: $channelId")
                 null
             }
         }
-        rvPair?.let {
-            updateList(rvPair.first, rvPair.second, notifData)
+        rvTriple?.let {
+            updateList(rvTriple.first, rvTriple.second, notifDataMy)
+
+            ///
+            findViewById<TextView>(rvTriple.third)?.let {
+                Utils.blinkView(it, Html.fromHtml("<b>${channelId}</b> has active notif: ${rvTriple.first.size}"))
+            }
+            ///
         }
     }
 
-    private fun updateList(adapterNotificationDataList: ArrayList<NotificationData>, recyclerView: RecyclerView, notifData: NotificationData) {
-        adapterNotificationDataList.add(notifData)
+    private fun updateList(adapterMyNotificationDataList: ArrayList<MyNotificationData>, recyclerView: RecyclerView, notifDataMy: MyNotificationData?) {
+        notifDataMy?.let {
+            adapterMyNotificationDataList.add(notifDataMy)
+        }
 
-        (recyclerView.adapter as? GroupChannelAdapter)?.updateList(adapterNotificationDataList)
-        val notiSize = (recyclerView.adapter?.itemCount) ?: adapterNotificationDataList.size
-        recyclerView.scrollToPosition(notiSize - 1);
+        (recyclerView.adapter as? GroupChannelAdapter)?.updateList(adapterMyNotificationDataList)
+        val notiSize = (recyclerView.adapter?.itemCount) ?: adapterMyNotificationDataList.size
+        recyclerView.scrollToPosition(notiSize - 1)
 
         //Log.d("+++", "+++ --- exit updateList(), adapterNotificationDataList: ${adapterNotificationDataList.size}")
     }
@@ -234,6 +265,9 @@ class GroupChannelNotification : AppCompatActivity() {
                 }
                 startNotifToChannel(i)
             }
+            postingJob?.cancel()
+            postingJob = null
+            setNotifyButtonText()
         }
         //Log.e("+++", "+++ +++ after for (i: Int in 0..8)")
     }
@@ -266,7 +300,7 @@ class GroupChannelNotification : AppCompatActivity() {
                 3 -> Triple(GROUP_B, CHANNEL_ID_4, R.id.txt_gb_c4)
                 else -> Triple(GROUP_A, CHANNEL_ID_1, R.id.txt_ga_c1)
             }
-            val notiItem = NotificationData(getNextNoitfyId(),
+            val notiItem = MyNotificationData(getNextNoitfyId(),
                 "title ${i+1}$baseIndx", "body: ${i+1}$baseIndx", System.currentTimeMillis(), Group_Channel.second, Group_Channel.first )
 
             Log.e("+++", "+++ startNotifToChannel($baseIndx, $i, (((baseIndx * 4)  + i) + 1):${((baseIndx * 4)  + i) + 1}), $notiItem")
@@ -280,7 +314,7 @@ class GroupChannelNotification : AppCompatActivity() {
     }
 
 
-    fun sendNotificationToUser(context: Context, channelId: String, notiItem: NotificationData): Boolean {
+    fun sendNotificationToUser(context: Context, channelId: String, notiItem: MyNotificationData): Boolean {
 
         //Check notification status
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -361,7 +395,8 @@ class GroupChannelNotification : AppCompatActivity() {
         maxActiveNoticicationAllowd = findViewById<EditText>(R.id.max_active_notification_count)?.text?.toString()?.toInt() ?: 5
         when(findViewById<RadioGroup>(R.id.typeSelectorRadioGroup)?.checkedRadioButtonId){
             R.id.strategy_purge -> {
-                notifyWithPurgeLatestFirst(context, theId, builder.build())
+                notifyWithPurgeLatestFirstAganistChannelOrder(context, theId, builder.build())
+                //notifyWithPurgeLatestFirst(context, theId, builder.build())
             }
             R.id.strategy_replace -> {
                 notifyWithReplaceLatestFirst(context, theId, builder.build())

@@ -10,7 +10,6 @@ import android.provider.Settings
 import android.service.notification.StatusBarNotification
 import android.text.Spanned
 import android.util.Log
-import android.view.View
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
 import android.view.inputmethod.InputMethodManager
@@ -18,10 +17,10 @@ import android.widget.TextView
 import androidx.core.app.NotificationCompat.EXTRA_TEXT
 import androidx.core.app.NotificationCompat.EXTRA_TITLE
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat.getSystemService
 import java.security.SecureRandom
 import java.util.*
 import kotlin.Comparator
+import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
 
@@ -32,6 +31,14 @@ object Utils {
     val CHANNEL_ID_2 = "Channel_2"
     val CHANNEL_ID_3 = "Channel_3"
     val CHANNEL_ID_4 = "Channel_4"
+
+    val chanelIdOrderList: ArrayList<String> = ArrayList<String>(4).apply {
+        add(0, CHANNEL_ID_1)
+        add(1, CHANNEL_ID_2)
+        add(2, CHANNEL_ID_3)
+        add(3, CHANNEL_ID_4)
+    }
+
     var maxActiveNoticicationAllowd = 5
     lateinit var appContext: Context
     lateinit var packageName: String
@@ -81,9 +88,40 @@ object Utils {
 //        }
     }
 
-    fun getActiveNotification(): Pair<ArrayList<NotificationData>, MutableList<StatusBarNotification>> {
+    private fun printOutActiveNotifications(activeNotifications: ArrayList<StatusBarNotification>) {
+        for (i in activeNotifications!!.indices) {
+            val activeNotification = activeNotifications[i]
+            val notification: Notification = activeNotification.notification
+            val title: String = notification.extras.getString(
+                EXTRA_TITLE,
+                "no found by key $EXTRA_TITLE"
+            )
+            val body: String = notification.extras.getString(
+                EXTRA_TEXT,
+                "no found by key android.text"
+            ) //com.oath.mobile.shadowfax.demo.MsgString
 
-        var activeotificationDataList = arrayListOf<NotificationData>()
+            //notification.group
+            //notification.channelId
+
+            Log.w(
+                "+++", "+++ [" + i + "]: id: " + activeNotification.id +
+                        ", tag:" + activeNotification.tag +
+                        ", getPackageName:" + activeNotification.packageName +
+                        ", getPostTime:" + activeNotification.postTime +
+                        ", body:" + body +
+                        ", tile: $title" +
+                        ", groupKey:" + activeNotification.groupKey +
+                        ", key:" + activeNotification.key +
+                        ", n.grp:" + notification.getGroup() +
+                        ", getUser:" + activeNotification.user + "\nnotification: $notification"
+            )
+        }
+    }
+
+    fun getActiveNotification(): Pair<ArrayList<MyNotificationData>, MutableList<StatusBarNotification>> {
+
+        var activeotificationDataList = arrayListOf<MyNotificationData>()
         var toBeSorted: MutableList<StatusBarNotification> = mutableListOf()
 
         val notificationManagerCompat: NotificationManagerCompat = NotificationManagerCompat.from(
@@ -102,42 +140,35 @@ object Utils {
             // some device getActiveNotifications()may got NullPointerException
             try {
                 val pkNmae: String = appContext.getPackageName()
+
+                /** the nm.activeNotifications
+                 *
+                 * Recover a list of active notifications: ones that have been posted by the calling app that
+                 * have not yet been dismissed by the user or {@link #cancel(String, int)}ed by the app.
+                 *
+                 * <p><Each notification is embedded in a StatusBarNotification object, including the
+                 * original tag and id supplied to
+                 * notify(String, int, Notification)
+                 * and as well as a copy of the original
+                 * Notification object (via StatusBarNotification#getNotification()).
+                 *
+                 * From {@link Build.VERSION_CODES#Q}, will also return notifications you've posted as an
+                 * app's notification delegate via
+                 * NotificationManager.notifyAsPackage(String, String, int, Notification)}.
+                 *
+                 * @return An array of StatusBarNotification.
+                 */
+
                 val activeNotifications = nm.activeNotifications.filter {
                     it.tag != "ranker_group"
                 }
-                Log.w(
-                    "+++",
-                    "+++ getActiveNotification(),pkNmae:$pkNmae,  active notifications count is " + (activeNotifications?.size
-                        ?: -1)
-                )
-                for (i in activeNotifications!!.indices) {
-                    val activeNotification = activeNotifications[i]
-                    val notification: Notification = activeNotification.notification
-                    val title: String = notification.extras.getString(
-                        EXTRA_TITLE,
-                        "no found by key $EXTRA_TITLE"
-                    )
-                    val body: String = notification.extras.getString(
-                        EXTRA_TEXT,
-                        "no found by key android.text"
-                    ) //com.oath.mobile.shadowfax.demo.MsgString
+//                Log.w(
+//                    "+++",
+//                    "+++ getActiveNotification(),pkNmae:$pkNmae,  active notifications count is " + (activeNotifications?.size
+//                        ?: -1)
+//                )
+                printOutActiveNotifications(activeNotifications as ArrayList<StatusBarNotification>)
 
-                    //notification.group
-                    //notification.channelId
-
-                    Log.w(
-                        "+++", "+++ [" + i + "]: id: " + activeNotification.id +
-                                ", tag:" + activeNotification.tag +
-                                ", getPackageName:" + activeNotification.packageName +
-                                ", getPostTime:" + activeNotification.postTime +
-                                ", body:" + body +
-                                ", tile: $title" +
-                                ", groupKey:" + activeNotification.groupKey +
-                                ", key:" + activeNotification.key +
-                                ", n.grp:" + notification.getGroup() +
-                                ", getUser:" + activeNotification.user + "\nnotification: $notification"
-                    )
-                }
                 toBeSorted = activeNotifications.toMutableList()// Arrays.asList(activeNotifications)
                 Collections.sort(toBeSorted, Comparator<StatusBarNotification?> { a, b ->
                     if (a != null && b != null) {
@@ -147,7 +178,7 @@ object Utils {
                     }
                 })
                 for (i in toBeSorted.indices) {
-                    val activeNotification = toBeSorted[i]
+                    val activeNotification: StatusBarNotification = toBeSorted[i]
                     val notification: Notification = activeNotification.notification
                     val title: String = notification.extras.getString(
                         EXTRA_TITLE,
@@ -161,11 +192,11 @@ object Utils {
                     val channelId_groupId = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         val notificationManager = NotificationManagerCompat.from(Utils.appContext)
                         val channel = notificationManager.getNotificationChannel(notification.channelId)
-                        Log.v(
-                            "+++",
-                            "+++ group_channelId(), notification.channelId: ${notification.channelId} --> channel.id: ${channel?.id}\n" +
-                                    "notification.group: ${notification.group} --> channel?.group: ${channel?.group} "
-                        )
+//                        Log.v(
+//                            "+++",
+//                            "+++ group_channelId(), notification.channelId: ${notification.channelId} --> channel.id: ${channel?.id}\n" +
+//                                    "notification.group: ${notification.group} --> channel?.group: ${channel?.group} "
+//                        )
                         if (channel != null) {
                             Pair(channel.id, channel.group)
                         } else {
@@ -175,27 +206,28 @@ object Utils {
                     } else {
                         null
                     }
+                    printoutNotication(notification, activeNotification, channelId_groupId, i)
 
-                    val notfExtraStr = bundleToString(notification.extras)
-                    Log.i("+++", "+++ [$i]: notification.extras: $notfExtraStr")
-                    Log.d(
-                        "+++", "+++ @@@ [" + i + "]: id: " + activeNotification.id +
-                                ", tag:" + activeNotification.tag +
-                                ", getPackageName:" + activeNotification.packageName +
-                                ", getPostTime:" + activeNotification.postTime +
-                                ", tile: $title" +
-                                ", body:" + body +
-                                ", getUser:" + activeNotification.user +
-                                ", channelId: ${channelId_groupId?.first} " +
-                                ", notification.group: ${channelId_groupId?.second}"
-                    )
-                    val notifItem = NotificationData(
+//                    val notfExtraStr = bundleToString(notification.extras)
+//                    Log.i("+++", "+++ [$i]: notification.extras: $notfExtraStr")
+//                    Log.d(
+//                        "+++", "+++ @@@ [" + i + "]: id: " + activeNotification.id +
+//                                ", tag:" + activeNotification.tag +
+//                                ", getPackageName:" + activeNotification.packageName +
+//                                ", getPostTime:" + activeNotification.postTime +
+//                                ", tile: $title" +
+//                                ", body:" + body +
+//                                ", getUser:" + activeNotification.user +
+//                                ", channelId: ${channelId_groupId?.first} " +
+//                                ", notification.group: ${channelId_groupId?.second}"
+//                    )
+                    val notifItem = MyNotificationData(
                         activeNotification.id,
                         title,
                         body,
                         activeNotification.postTime,
-                        channelId_groupId?.first,
-                        channelId_groupId?.second,
+                        channelId_groupId?.first,  //channel_id
+                        channelId_groupId?.second, //group_id
                         (i == (toBeSorted.size - 1))
                     )
 
@@ -209,11 +241,122 @@ object Utils {
         return Pair(activeotificationDataList, toBeSorted)
     }
 
+    /**
+     * if lower than Build.VERSION_CODES.O return null
+     */
+    fun findLatestNotifInChannel(allActiveNotifs: List<StatusBarNotification>, channelId: String): StatusBarNotification? {
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val activeNotifFilteroutByChannelId = allActiveNotifs.filter{ statusBarNoification ->
+                (statusBarNoification.notification != null && (statusBarNoification.notification?.channelId.toString() == channelId))
+                    .also {
+                        Log.d("+++", "+++ findLatestNotifInChannel($channelId), ret: $it, statusBarNoification.notification!= null: ${statusBarNoification.notification != null}, statusBarNoification.notification?.channelId: ${statusBarNoification.notification?.channelId}\n" +
+                                "(notification?.channelId == channelId): ${(statusBarNoification.notification?.channelId.toString() == channelId)}")
+                    }
+            }
+
+            if (activeNotifFilteroutByChannelId.isNotEmpty()) {
+                val toBeSorted = activeNotifFilteroutByChannelId.toMutableList()
+                Collections.sort(toBeSorted, Comparator<StatusBarNotification?> { a, b ->
+                    if (a != null && b != null) {
+                        java.lang.Long.valueOf(b.postTime).compareTo(a.postTime)
+                    } else {
+                        1
+                    }
+                })
+
+                return toBeSorted[toBeSorted.size - 1]
+
+//                    .also {
+//
+//                        for (item in toBeSorted) {
+//                            Log.v(
+//                                "+++",
+//                                "+++ findLatestNotifInChannel()," +
+//                                        "toBeSorted.size: ${toBeSorted.size}), ${item.notification?.channelId}"
+//                            )
+//                        }
+//
+//                    }
+            }
+        }
+        return null.also {
+            Log.e(
+                "+++",
+                "+++ !!! findLatestNotifInChannel(), ret == null" +
+                        "allActiveNotifs.size: ${allActiveNotifs.size}"
+            )
+        }
+    }
+
+    ///
+    fun notifyWithPurgeLatestFirstAganistChannelOrder(context: Context, theId: Int, newNtify: Notification) {
+
+        val pair = getActiveNotification()  //Pair<ArrayList<MyNotificationData>, MutableList<StatusBarNotification>>
+        val sortedActiveNotifs = pair.second
+
+        val activeNotifFilterOutGroup = sortedActiveNotifs.filter{
+            it.tag != "ranker_group"
+        }
+
+        Log.d(
+            "+++",
+            "+++ notifyWithPurgeLatestFirstAganistChannelOrder(), activeNotifFilterOutGroup.size: ${activeNotifFilterOutGroup.size}, maxActiveNoticicationAllowd: $maxActiveNoticicationAllowd"
+        )
+        ///
+        val chanelIdOrderList: ArrayList<String> = ArrayList<String>(4)
+        chanelIdOrderList.add(0, CHANNEL_ID_1)
+        chanelIdOrderList.add(1, CHANNEL_ID_2)
+        chanelIdOrderList.add(2, CHANNEL_ID_3)
+        chanelIdOrderList.add(3, CHANNEL_ID_4)
+
+        if (activeNotifFilterOutGroup.size > maxActiveNoticicationAllowd - 1) {
+            var laetsNofifyByChannelOrder: StatusBarNotification? = null
+            for (channleId in chanelIdOrderList) {
+                laetsNofifyByChannelOrder = findLatestNotifInChannel(activeNotifFilterOutGroup, channleId)
+                if (laetsNofifyByChannelOrder != null) {
+                    NotificationManagerCompat.from(appContext).cancel(laetsNofifyByChannelOrder.id)
+
+                    Log.e("+++", "+++ !!! notifyWithPurgeLatestFirstAganistChannelOrder(), notification?.channelId: ${channleId}, cancel(${laetsNofifyByChannelOrder.id}), ")
+
+                    break
+                }
+            }
+            // fallback shouldnt happen
+            if (laetsNofifyByChannelOrder == null && activeNotifFilterOutGroup.size > maxActiveNoticicationAllowd - 1) {
+                Log.e("+++", "+++ !!! notifyWithPurgeLatestFirstAganistChannelOrder() no notify found, do fallback")
+
+                for (i in activeNotifFilterOutGroup.size - 1 downTo maxActiveNoticicationAllowd - 1) {
+                    val activeNotification = activeNotifFilterOutGroup[i]
+                    if (activeNotification.tag !== "ranker_group") {
+                        NotificationManagerCompat.from(appContext).cancel(activeNotification.id)
+                    }
+                    val notification: Notification = activeNotification.notification
+                    val body: String = notification.extras.getString(
+                        EXTRA_TEXT,
+                        "no found by key android.text"
+                    ) //com.oath.mobile.shadowfax.demo.MsgString
+
+                    Log.v(
+                        "+++", "+++ [" + i + "]: id: " + activeNotification.id +
+                                ", tag:" + activeNotification.tag +
+                                ", getPackageName:" + activeNotification.packageName +
+                                ", getPostTime:" + activeNotification.postTime +
+                                ", body:" + body +
+                                ", getUser:" + activeNotification.user
+                    )
+                }
+            }
+        }
+        val notificationManager = NotificationManagerCompat.from(context)
+        notificationManager.notify(theId, newNtify)
+    }
+    ///
+
     fun notifyWithPurgeLatestFirst(context: Context, theId: Int, newNtify: Notification) {
 
-        val p = getActiveNotification()
-        val sortedActiveNotifs = p.second
-
+        val pair = getActiveNotification()  //Pair<ArrayList<MyNotificationData>, MutableList<StatusBarNotification>>
+        val sortedActiveNotifs = pair.second
 
         val activeNotifFilterOutGroup = sortedActiveNotifs.filter{
             it.tag != "ranker_group"
@@ -443,6 +586,30 @@ object Utils {
             }
         }
         return body.toString()
+    }
+
+    private fun printoutNotication(notification: Notification, activeNotification: StatusBarNotification, channelId_groupId: Pair<String, String>?, i: Int) {
+        val notfExtraStr = bundleToString(notification.extras)
+        Log.i("+++", "+++ [$i]: notification.extras: $notfExtraStr")
+        val title: String = notification.extras.getString(
+            EXTRA_TITLE,
+            "--no found by key $EXTRA_TITLE"
+        )
+        val body: String = notification.extras.getString(
+            EXTRA_TEXT,
+            "no found by key android.text"
+        )
+        Log.d(
+            "+++", "+++ @@@ [" + i + "]: id: " + activeNotification.id +
+                    ", tag:" + activeNotification.tag +
+                    ", getPackageName:" + activeNotification.packageName +
+                    ", getPostTime:" + activeNotification.postTime +
+                    ", tile: $title" +
+                    ", body:" + body +
+                    ", getUser:" + activeNotification.user +
+                    ", channelId: ${channelId_groupId?.first} " +
+                    ", notification.group: ${channelId_groupId?.second}"
+        )
     }
 
     fun logIntent(intent: Intent, TAG: String) {

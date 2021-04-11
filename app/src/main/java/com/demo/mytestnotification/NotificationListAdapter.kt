@@ -11,11 +11,11 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.demo.mytestnotification.Utils.CHANNEL_ID_1
 
-class CustomAdapter(dataList: ArrayList<NotificationData>) : RecyclerView.Adapter<CustomAdapter.ViewHolder>() {
+class CustomAdapter(dataListMy: ArrayList<MyNotificationData>) : RecyclerView.Adapter<CustomAdapter.ViewHolder>() {
 
-    var dataSet: ArrayList<NotificationData> = arrayListOf<NotificationData>()
+    var dataSetMy: ArrayList<MyNotificationData> = arrayListOf<MyNotificationData>()
     init {
-        dataSet.addAll(dataList)
+        dataSetMy.addAll(dataListMy)
     }
     /**
      * Provide a reference to the type of views that you are using
@@ -33,11 +33,11 @@ class CustomAdapter(dataList: ArrayList<NotificationData>) : RecyclerView.Adapte
 
     }
 
-    fun updateList(data: ArrayList<NotificationData>) {
+    fun updateList(data: ArrayList<MyNotificationData>) {
         //android.util.Log.i("+++", "+++ entr updateList(${data.size})")
-        dataSet.clear()
+        dataSetMy.clear()
         notifyDataSetChanged()
-        dataSet.addAll(data)
+        dataSetMy.addAll(data)
         notifyDataSetChanged()
         //android.util.Log.i("+++", "+++ --- exit updateList(${data.size})")
     }
@@ -54,7 +54,7 @@ class CustomAdapter(dataList: ArrayList<NotificationData>) : RecyclerView.Adapte
     // Replace the contents of a view (invoked by the layout manager)
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
 
-        val notifItem = dataSet[position]
+        val notifItem = dataSetMy[position]
         viewHolder.id.text = Html.fromHtml("<b>id: ${notifItem.id.toString()}</b>")
         viewHolder.grp_channel_id.text = ", [group: ${notifItem.groupId}, channelId: ${notifItem.channelId}]"
         viewHolder.title.text = notifItem.title
@@ -71,9 +71,9 @@ class CustomAdapter(dataList: ArrayList<NotificationData>) : RecyclerView.Adapte
     }
 
     // Return the size of your dataset (invoked by the layout manager)
-    override fun getItemCount() = dataSet.size
+    override fun getItemCount() = dataSetMy.size
 
-    fun updateChannleBk(viewHolder: ViewHolder, notiItem: NotificationData) {
+    fun updateChannleBk(viewHolder: ViewHolder, notiItem: MyNotificationData) {
         notiItem.channelId?.let {
             val cl = when (it) {
                 CHANNEL_ID_1 -> ContextCompat.getColor(viewHolder.itemView.context, R.color.channel_1_color)

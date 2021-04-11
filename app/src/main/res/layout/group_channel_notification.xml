@@ -37,7 +37,7 @@
         app:layout_constraintBottom_toTopOf="@+id/throttle_strategy"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHeight_max="520dp"
-        app:layout_constraintHeight_min="220dp"
+        app:layout_constraintHeight_min="280dp"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
 
@@ -62,17 +62,22 @@
                     android:layout_height="wrap_content"
                     android:text = "GROUP_A, CHANNEL_1"
                     android:gravity="center"/>
+                <TextView
+                    android:id="@+id/txt_ga_c1_count"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    tools:text = "total active notifs: 99"
+                    />
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/recycler_list_ga_c1"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="3dp"
                     android:scrollbars="vertical"
-
                     tools:itemCount="2"
                     tools:listitem="@layout/group_channel_notification_item">
-
                 </androidx.recyclerview.widget.RecyclerView>
+
 
             </LinearLayout>
 
@@ -87,6 +92,12 @@
                     android:layout_height="wrap_content"
                     android:text = "GROUP_A, CHANNEL_2"
                     android:gravity="center"/>
+                <TextView
+                    android:id="@+id/txt_ga_c2_count"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    tools:text = "total active notifs: 99"
+                    />
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/recycler_list_ga_c2"
                     android:layout_width="match_parent"
@@ -119,6 +130,12 @@
                     android:layout_height="wrap_content"
                     android:text = "GROUP_B, CHANNEL_3"
                     android:gravity="center"/>
+                <TextView
+                    android:id="@+id/txt_gb_c3_count"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    tools:text = "total active notifs: 99"
+                    />
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/recycler_list_gb_c3"
                     android:layout_width="match_parent"
@@ -129,6 +146,7 @@
                     tools:itemCount="12"
                     tools:listitem="@layout/group_channel_notification_item">
                 </androidx.recyclerview.widget.RecyclerView>
+
 
             </LinearLayout>
 
@@ -144,6 +162,12 @@
                     android:layout_height="wrap_content"
                     android:text = "GROUP_B, CHANNEL_4"
                     android:gravity="center"/>
+                <TextView
+                    android:id="@+id/txt_gb_c4_count"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    tools:text = "total active notifs: 99"
+                    />
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/recycler_list_gb_c4"
                     android:layout_width="match_parent"
@@ -237,7 +261,7 @@
                         android:layout_height="wrap_content"
                         android:maxLines="1"
                         android:inputType="number"
-                        android:text="5"
+                        android:text="6"
                         tools:background="#00ffff"
                         />
                 </LinearLayout>

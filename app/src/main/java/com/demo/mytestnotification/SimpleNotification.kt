@@ -165,8 +165,35 @@ class SimpleNotification : AppCompatActivity() {
         }
     }
 
+
+    var notifyByClickCount = 0
+    fun notifyByClick(view: View) {
+        if (postingJob != null) {
+            postingJob?.cancel()
+            postingJob = null
+            setNotifyButtonText()
+        }
+        Thread {
+            Utils.createChannel(
+                CHANNEL_ID_1,
+                "Notifications channel 1",
+                "This is Channel 1 for notifications for ...",
+                NotificationManager.IMPORTANCE_HIGH, //NotificationManager.IMPORTANCE_LOW, //NotificationManager.IMPORTANCE_HIGH,
+                null
+            )
+            val notiItem = MyNotificationData(getNextNoitfyId(),
+                "title ${++notifyByClickCount}", "body: ${notifyByClickCount}", System.currentTimeMillis())
+            if (sendNotificationToUser(this@SimpleNotification, notiItem)) {
+                findViewById<TextView>(R.id.description)?.let {
+                    blinkView(it, Html.fromHtml("<b><font color=\"#ff0000\">${notifyByClickCount} times</font></b> <i>posted to notification drawer</i>"))
+                }
+            }
+        }.start()
+    }
+
     var postingJob: Job? = null
     fun startNotify(view: View) {
+        notifyByClickCount = 0
         Utils.closeKeyboard(this)
         if (postingJob != null) {
             postingJob?.cancel()

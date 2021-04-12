@@ -202,7 +202,7 @@
                 android:id="@+id/start_notify"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Start notify - 2 sec"
+                android:text="Start auto notify - 2 sec"
                 android:onClick="startNotify"
                 />
             <TextView
@@ -221,6 +221,15 @@
                 android:text="2"
                 />
         </LinearLayout>
+
+        <Button
+            android:id="@+id/notify_by_click"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="do single notify by click here"
+            android:onClick="notifyByClick"
+            />
 
     </androidx.appcompat.widget.LinearLayoutCompat>
 

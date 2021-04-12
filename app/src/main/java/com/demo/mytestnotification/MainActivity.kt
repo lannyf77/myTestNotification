@@ -9,11 +9,14 @@ import android.provider.Settings
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
+import com.demo.mytestnotification.Utils.getDeviceName
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        getDeviceName()
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             findViewById<Button>(R.id.groupNotification)?.apply {

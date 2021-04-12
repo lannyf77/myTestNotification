@@ -1,6 +1,10 @@
 package com.demo.mytestnotification
 
-import android.app.*
+import android.app.Activity
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationChannelGroup
+import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -106,15 +110,15 @@ object Utils {
 
             Log.w(
                 "+++", "+++ [" + i + "]: id: " + activeNotification.id +
-                        ", tag:" + activeNotification.tag +
-                        ", getPackageName:" + activeNotification.packageName +
-                        ", getPostTime:" + activeNotification.postTime +
-                        ", body:" + body +
-                        ", tile: $title" +
-                        ", groupKey:" + activeNotification.groupKey +
-                        ", key:" + activeNotification.key +
-                        ", n.grp:" + notification.getGroup() +
-                        ", getUser:" + activeNotification.user + "\nnotification: $notification"
+                ", tag:" + activeNotification.tag +
+                ", getPackageName:" + activeNotification.packageName +
+                ", getPostTime:" + activeNotification.postTime +
+                ", body:" + body +
+                ", tile: $title" +
+                ", groupKey:" + activeNotification.groupKey +
+                ", key:" + activeNotification.key +
+                ", n.grp:" + notification.getGroup() +
+                ", getUser:" + activeNotification.user + "\nnotification: $notification"
             )
         }
     }
@@ -251,7 +255,7 @@ object Utils {
                 (statusBarNoification.notification != null && (statusBarNoification.notification?.channelId.toString() == channelId))
                     .also {
                         Log.d("+++", "+++ findLatestNotifInChannel($channelId), ret: $it, statusBarNoification.notification!= null: ${statusBarNoification.notification != null}, statusBarNoification.notification?.channelId: ${statusBarNoification.notification?.channelId}\n" +
-                                "(notification?.channelId == channelId): ${(statusBarNoification.notification?.channelId.toString() == channelId)}")
+                            "(notification?.channelId == channelId): ${(statusBarNoification.notification?.channelId.toString() == channelId)}")
                     }
             }
 
@@ -284,7 +288,7 @@ object Utils {
             Log.e(
                 "+++",
                 "+++ !!! findLatestNotifInChannel(), ret == null" +
-                        "allActiveNotifs.size: ${allActiveNotifs.size}"
+                    "allActiveNotifs.size: ${allActiveNotifs.size}"
             )
         }
     }
@@ -391,11 +395,11 @@ object Utils {
                     ) //com.oath.mobile.shadowfax.demo.MsgString
                     Log.v(
                         "+++", "+++ [" + i + "]: id: " + activeNotification.id +
-                                ", tag:" + activeNotification.tag +
-                                ", getPackageName:" + activeNotification.packageName +
-                                ", getPostTime:" + activeNotification.postTime +
-                                ", body:" + body +
-                                ", getUser:" + activeNotification.user
+                        ", tag:" + activeNotification.tag +
+                        ", getPackageName:" + activeNotification.packageName +
+                        ", getPostTime:" + activeNotification.postTime +
+                        ", body:" + body +
+                        ", getUser:" + activeNotification.user
                     )
                     break
                 }
@@ -439,14 +443,14 @@ object Utils {
 
                     Log.w(
                         "+++", "+++ [" + i + "]: id: " + activeNotification.id +
-                                ", tag:" + activeNotification.tag +
-                                ", getPackageName:" + activeNotification.packageName +
-                                ", getPostTime:" + activeNotification.postTime +
-                                ", body:" + body +
-                                ", groupKey:" + activeNotification.groupKey +
-                                ", key:" + activeNotification.key +
-                                ", n.grp:" + notification.getGroup() +
-                                ", getUser:" + activeNotification.user
+                        ", tag:" + activeNotification.tag +
+                        ", getPackageName:" + activeNotification.packageName +
+                        ", getPostTime:" + activeNotification.postTime +
+                        ", body:" + body +
+                        ", groupKey:" + activeNotification.groupKey +
+                        ", key:" + activeNotification.key +
+                        ", n.grp:" + notification.getGroup() +
+                        ", getUser:" + activeNotification.user
                     )
                 }
                 val toBeSorted: MutableList<StatusBarNotification> = activeNotifications.toMutableList()// Arrays.asList(activeNotifications)
@@ -466,11 +470,11 @@ object Utils {
                     ) //com.oath.mobile.shadowfax.demo.MsgString
                     Log.d(
                         "+++", "+++ [" + i + "]: id: " + activeNotification.id +
-                                ", tag:" + activeNotification.tag +
-                                ", getPackageName:" + activeNotification.packageName +
-                                ", getPostTime:" + activeNotification.postTime +
-                                ", body:" + body +
-                                ", getUser:" + activeNotification.user
+                        ", tag:" + activeNotification.tag +
+                        ", getPackageName:" + activeNotification.packageName +
+                        ", getPostTime:" + activeNotification.postTime +
+                        ", body:" + body +
+                        ", getUser:" + activeNotification.user
                     )
                 }
                 if (toBeSorted.size > maxActiveNoticicationAllowd) {
@@ -554,14 +558,14 @@ object Utils {
         )
         Log.d(
             "+++", "+++ @@@ [" + i + "]: id: " + activeNotification.id +
-                    ", tag:" + activeNotification.tag +
-                    ", getPackageName:" + activeNotification.packageName +
-                    ", getPostTime:" + activeNotification.postTime +
-                    ", tile: $title" +
-                    ", body:" + body +
-                    ", getUser:" + activeNotification.user +
-                    ", channelId: ${channelId_groupId?.first} " +
-                    ", notification.group: ${channelId_groupId?.second}"
+            ", tag:" + activeNotification.tag +
+            ", getPackageName:" + activeNotification.packageName +
+            ", getPostTime:" + activeNotification.postTime +
+            ", tile: $title" +
+            ", body:" + body +
+            ", getUser:" + activeNotification.user +
+            ", channelId: ${channelId_groupId?.first} " +
+            ", notification.group: ${channelId_groupId?.second}"
         )
     }
 
@@ -642,15 +646,28 @@ object Utils {
         )
         Log.v(
             "+++", "+++ [" + i + "]: id: " + activeNotification.id +
-                    ", tag:" + activeNotification.tag +
-                    ", getPackageName:" + activeNotification.packageName +
-                    ", getPostTime:" + activeNotification.postTime +
-                    ", body:" + body +
-                    ", getUser:" + activeNotification.user
+            ", tag:" + activeNotification.tag +
+            ", getPackageName:" + activeNotification.packageName +
+            ", getPostTime:" + activeNotification.postTime +
+            ", body:" + body +
+            ", getUser:" + activeNotification.user
         )
     }
 
     private fun doCancelActiveNotifyByIdAndTag(id: Int, tag: String?) {
         NotificationManagerCompat.from(appContext).cancel(tag, id)
     }
+
+    fun getDeviceName(): String {
+       return  (if (Build.MODEL.startsWith(Build.MANUFACTURER, ignoreCase = true)) {
+            Build.MODEL
+       } else {
+            "${Build.MANUFACTURER} ${Build.MODEL}"
+       }).capitalize()
+           .also { ret ->
+               val str = android.os.Build::class.java.fields.map { "Build.${it.name} = ${it.get(it.name)}"}.joinToString("\n")
+               Log.i("+++", "+++ getDeviceName(), ret: $ret\n$str")
+           }
+    }
+
 }

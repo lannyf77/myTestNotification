@@ -353,8 +353,7 @@
                 android:layout_height="wrap_content"
                 android:text="Start notify - 2 sec"
                 android:onClick="startNotify"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/typeSelectorRadioGroup" />
+                />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

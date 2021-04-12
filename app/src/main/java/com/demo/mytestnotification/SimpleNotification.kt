@@ -128,10 +128,12 @@ class SimpleNotification : AppCompatActivity() {
         adapterNotificationDataList.clear()
         runOnUiThread(Runnable() {
             val arr = Utils.getActiveNotification().first
-            Log.d("+++", "+++ updateActivNotifsInRV(), arr.size: ${arr.size}")
-            for (notif: MyNotificationData in arr) {
-                updateList(notif)
-            }
+            Log.d("+++", "+++ +++ updateActivNotifsInRV(), arr.size: ${arr.size}")
+            updateList(arr)
+
+//            for (notif: MyNotificationData in arr) {
+//                updateList(notif)
+//            }
 
             findViewById<TextView>(R.id.cavtive_notif_count)?.let {
                 it.text = Html.fromHtml("current active notifications count: <b><font color=\"#ff0000\">${arr.size}</font></b>")
@@ -139,15 +141,20 @@ class SimpleNotification : AppCompatActivity() {
         })
     }
 
-    private fun updateList(notifDataMy: MyNotificationData) {
+    private fun updateList(notifDataMyList: ArrayList<MyNotificationData>) {
 
-        adapterNotificationDataList.add(notifDataMy)
+        adapterNotificationDataList.addAll(notifDataMyList)
 
+        val oldSize = recyclerView.adapter?.itemCount
+        var itemSizeChanged = (oldSize != adapterNotificationDataList.size)
         (recyclerView.adapter as? CustomAdapter)?.updateList(adapterNotificationDataList)
         val notiSize = (recyclerView.adapter?.itemCount) ?: adapterNotificationDataList.size
-        recyclerView.scrollToPosition(notiSize - 1);
 
-        //Log.d("+++", "+++ --- exit updateList(), adapterNotificationDataList: ${adapterNotificationDataList.size}")
+        if (itemSizeChanged) {
+            recyclerView.scrollToPosition(notiSize - 1)
+        }
+
+        Log.d("+++", "+++ +++ updateList(), itemSizeChanged: $itemSizeChanged, oldSize: $oldSize ==? adapterNotificationDataList: ${adapterNotificationDataList.size}")
     }
 
     override fun onDestroy() {

@@ -8,6 +8,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.demo.mytestnotification.Utils.CHANNEL_ID_1
 import com.demo.mytestnotification.Utils.CHANNEL_ID_2
@@ -34,7 +35,15 @@ class GroupChannelAdapter(dataListMy: ArrayList<MyNotificationData>,
         val oldestTxt: TextView = view.findViewById(R.id.oldest_float_txt)
     }
 
-    fun updateList(data: ArrayList<MyNotificationData>) {
+    fun updateList(newDataSet: ArrayList<MyNotificationData>) {
+        val diffCallback = MyDiffCallback(dataSetMy, newDataSet)
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
+        dataSetMy.clear()
+        dataSetMy.addAll(newDataSet)
+        diffResult.dispatchUpdatesTo(this)
+    }
+
+    fun updateList_old(data: ArrayList<MyNotificationData>) {
         android.util.Log.i("+++", "+++ !!! enter updateList(${data.size}), $groupId, $channelId")
         dataSetMy.clear()
         notifyDataSetChanged()

@@ -8,6 +8,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.demo.mytestnotification.Utils.CHANNEL_ID_1
 
@@ -33,7 +34,15 @@ class CustomAdapter(dataListMy: ArrayList<MyNotificationData>) : RecyclerView.Ad
 
     }
 
-    fun updateList(data: ArrayList<MyNotificationData>) {
+    fun updateList(newDataSet: ArrayList<MyNotificationData>) {
+        val diffCallback = MyDiffCallback(dataSetMy, newDataSet)
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
+        dataSetMy.clear()
+        dataSetMy.addAll(newDataSet)
+        diffResult.dispatchUpdatesTo(this)
+    }
+
+    fun updateLis_oldt(data: ArrayList<MyNotificationData>) {
         //android.util.Log.i("+++", "+++ entr updateList(${data.size})")
         dataSetMy.clear()
         notifyDataSetChanged()

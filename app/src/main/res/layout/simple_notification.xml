@@ -209,7 +209,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="6dp"
-                tools:text="interval:" />
+                android:text="interval:" />
             <EditText
                 android:id="@+id/interval"
                 android:layout_width="0dp"

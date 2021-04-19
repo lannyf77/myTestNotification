@@ -176,6 +176,8 @@ object Utils {
                 toBeSorted = activeNotifications.toMutableList()// Arrays.asList(activeNotifications)
                 Collections.sort(toBeSorted, Comparator<StatusBarNotification?> { a, b ->
                     if (a != null && b != null) {
+                        Log.e("+++", "+++ sortActiveNootifications().compare(), b.getPostTime():" + b!!.postTime + ", a.getPostTime()" + a!!.postTime)
+
                         java.lang.Long.valueOf(b.postTime).compareTo(a.postTime)
                     } else {
                         1
@@ -210,21 +212,21 @@ object Utils {
                     } else {
                         null
                     }
-                    printoutNotication(notification, activeNotification, channelId_groupId, i)
+                    //printoutNotication(notification, activeNotification, channelId_groupId, i)
 
-//                    val notfExtraStr = bundleToString(notification.extras)
-//                    Log.i("+++", "+++ [$i]: notification.extras: $notfExtraStr")
-//                    Log.d(
-//                        "+++", "+++ @@@ [" + i + "]: id: " + activeNotification.id +
-//                                ", tag:" + activeNotification.tag +
-//                                ", getPackageName:" + activeNotification.packageName +
-//                                ", getPostTime:" + activeNotification.postTime +
-//                                ", tile: $title" +
-//                                ", body:" + body +
-//                                ", getUser:" + activeNotification.user +
-//                                ", channelId: ${channelId_groupId?.first} " +
-//                                ", notification.group: ${channelId_groupId?.second}"
-//                    )
+                    val notfExtraStr = bundleToString(notification.extras)
+                    //Log.i("+++", "+++ [$i]: notification.extras: $notfExtraStr")
+                    Log.d(
+                        "+++", "+++ @@@ [" + i + "]: id: " + activeNotification.id +
+                        ", tag:" + activeNotification.tag +
+                        //", getPackageName:" + activeNotification.packageName +
+                        ", getPostTime:" + activeNotification.postTime +
+                        ", tile: $title" +
+                        //", body:" + body +
+                        //", getUser:" + activeNotification.user +
+                        //", channelId: ${channelId_groupId?.first} " +
+                        ""//", notification.group: ${channelId_groupId?.second}"
+                    )
                     val notifItem = MyNotificationData(
                         activeNotification.id,
                         title,
@@ -455,6 +457,9 @@ object Utils {
                 }
                 val toBeSorted: MutableList<StatusBarNotification> = activeNotifications.toMutableList()// Arrays.asList(activeNotifications)
                 Collections.sort(toBeSorted, Comparator<StatusBarNotification?> { a, b ->
+
+                    println("+++ sortActiveNootifications().compare(), b.getPostTime():" + b!!.postTime + ", a.getPostTime()" + a!!.postTime)
+
                     if (a != null && b != null) {
                         java.lang.Long.valueOf(b.postTime).compareTo(a.postTime)
                     } else {
@@ -469,12 +474,12 @@ object Utils {
                         "no found by key android.text"
                     ) //com.oath.mobile.shadowfax.demo.MsgString
                     Log.d(
-                        "+++", "+++ [" + i + "]: id: " + activeNotification.id +
-                        ", tag:" + activeNotification.tag +
-                        ", getPackageName:" + activeNotification.packageName +
+                        "+++", "+++ toBeSorted[" + i + "]: id: " + activeNotification.id +
+                        //", tag:" + activeNotification.tag +
+                        //", getPackageName:" + activeNotification.packageName +
                         ", getPostTime:" + activeNotification.postTime +
                         ", body:" + body +
-                        ", getUser:" + activeNotification.user
+                        ""//", getUser:" + activeNotification.user
                     )
                 }
                 if (toBeSorted.size > maxActiveNoticicationAllowd) {
@@ -658,7 +663,20 @@ object Utils {
         NotificationManagerCompat.from(appContext).cancel(tag, id)
     }
 
-    fun getDeviceName(): String {
+    /** Returns the consumer friendly device name  */
+    fun getDeviceName(): String? {
+        Build.DEVICE
+        Build.HARDWARE
+        val manufacturer = Build.MANUFACTURER
+        val model = (Build.MODEL + " " + Build.BRAND + " (" + Build.VERSION.RELEASE + ")" + " API-" + Build.VERSION.SDK_INT)
+        return if (model.startsWith(manufacturer)) {
+            model.capitalize()
+        } else {
+            ("$manufacturer $model").capitalize()
+        }
+    }
+
+    fun getDeviceName_2(): String {
        return  (if (Build.MODEL.startsWith(Build.MANUFACTURER, ignoreCase = true)) {
             Build.MODEL
        } else {

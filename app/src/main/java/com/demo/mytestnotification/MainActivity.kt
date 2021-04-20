@@ -1,15 +1,15 @@
 package com.demo.mytestnotification
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.provider.Settings
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.Button
-import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import com.demo.mytestnotification.Utils.getDeviceName
+
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -23,6 +23,35 @@ class MainActivity : AppCompatActivity() {
                 visibility = View.GONE
             }
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        val inflater = menuInflater
+        inflater.inflate(R.menu.option_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // Handle item selection
+        return when (item.itemId) {
+            R.id.device_info -> {
+                popupDeviceInfo()
+                true
+            }
+            R.id.notification_setting -> {
+                Utils.opnNotificationSettings(this, packageName)
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    fun popupDeviceInfo() {
+
+        val intent = Intent(this, DeviceInfoActivity::class.java).apply {
+            //putExtra(EXTRA_MESSAGE, message)
+        }
+        startActivity(intent)
     }
 
     fun onSimpleNotificaion(view: View) {

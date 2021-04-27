@@ -1,26 +1,40 @@
 package com.demo.mytestnotification
 
+import android.Manifest
 import android.app.Activity
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationChannelGroup
 import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.graphics.Color
+import android.graphics.Typeface
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.service.notification.StatusBarNotification
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.SpannableStringBuilder
 import android.text.Spanned
+import android.text.TextUtils
+import android.text.style.StyleSpan
 import android.util.Log
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
 import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
+import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationCompat.EXTRA_TEXT
 import androidx.core.app.NotificationCompat.EXTRA_TITLE
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
+import androidx.core.text.bold
 import java.security.SecureRandom
 import java.util.*
 import kotlin.Comparator
@@ -686,6 +700,219 @@ object Utils {
                val str = android.os.Build::class.java.fields.map { "Build.${it.name} = ${it.get(it.name)}"}.joinToString("\n")
                Log.i("+++", "+++ getDeviceName(), ret: $ret\n$str")
            }
+    }
+
+    ///
+    private var pathList = listOf<String>("aaa", "bbb", "eee888")
+    private fun buildJsonString(): String {
+        val lsatValue = "___"
+        val spStrBuilder = StringBuilder() // SpannableStringBuilder()
+        if (pathList.isNotEmpty()) {
+            buildOnePathSb(0, lsatValue, spStrBuilder)
+        }
+        return spStrBuilder.toString()
+    }
+
+    private fun buildOnePathSb(deepth: Int, lastValue: String, spStrBuilder: StringBuilder) {
+        if (deepth >= pathList.size) {
+            return
+        }
+        //var spaceStr = "".padStart(deepth*4)
+        var spaceStr = ""
+        for (i in 0..(deepth*4)) {
+            spaceStr += Typography.nbsp
+        }
+        val pathStr: String = pathList[deepth]
+        when (deepth) {
+            0 -> {
+                spStrBuilder.append("{<br>$spaceStr<b><font color='#77ff0000'>$pathStr</font></b>")
+                val valuePart = if (pathList.size > 1) {
+                    ": {<br>"
+                } else {
+                    ": $lastValue<br>}"
+                }
+                spStrBuilder.append(valuePart)
+                if (deepth + 1 < pathList.size) {
+                    buildOnePathSb(deepth + 1, lastValue, spStrBuilder)
+                    spStrBuilder.append("<br>$spaceStr}")
+                }
+            }
+            (pathList.size - 1) -> {
+                spStrBuilder.append("$spaceStr$pathStr")
+                val valuePart = ": $lastValue<br>$spaceStr}"
+                spStrBuilder.append("$valuePart")
+            }
+            else -> {
+                spStrBuilder.append("$spaceStr$pathStr: {<br>")
+                buildOnePathSb(deepth+1, lastValue, spStrBuilder)
+                spStrBuilder.append("<br>$spaceStr}")
+            }
+        }
+    }
+
+
+    // seems not work in Dialog TextView
+    private fun boldTheFirstPath(): String {
+        val json = "{ \"location\": { \"country\":\"GB\", \"weather\":[ { \"zip\":20202, \"description\":\"sun\", \"temp\":\"80\" } ] } }"
+// List of words to be marked with bold
+// List of words to be marked with bold
+        val boldList: List<String> = Arrays.asList("country", "zip")
+        val spannable: Spannable = SpannableString(json)
+
+// Finding match of words in the String
+
+// Finding match of words in the String
+        for (word in boldList) {
+            var startIndex = json.indexOf(word)
+            do {
+                val endIndex = startIndex + word.length
+                spannable.setSpan(StyleSpan(Typeface.BOLD), startIndex, endIndex, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                startIndex = json.indexOf(word, endIndex)
+            } while (startIndex != -1)
+        }
+
+        return spannable.toString()
+    }
+
+    private fun buildOnePath(deepth: Int, lastValue: String, spStrBuilder: SpannableStringBuilder) {
+
+        var spaceStr = "".padStart(deepth + 8)
+//        for (i in 0..deepth) {
+//            spaceStr += " "
+//        }
+        val pathStr: String = pathList[deepth]
+        when (deepth) {
+            0 -> {
+                //spStrBuilder.color ( Color.CYAN) { append("{\n$spaceStr$pathStr") }
+                spStrBuilder.bold { append("{\n$spaceStr$pathStr") }
+                val valuePart = if (pathList.size > 1) {
+                    ": {"
+                } else {
+                    "$lastValue}"
+                }
+                spStrBuilder.append(valuePart + "\n");
+            }
+            (pathList.size - 1) -> {
+                spStrBuilder.append("$spaceStr$pathStr")
+                val valuePart = ": $lastValue\n}"
+                spStrBuilder.append(valuePart)
+            }
+            else -> {
+                spStrBuilder.append("$spaceStr$pathStr: {\n")
+            }
+        }
+    }
+
+    fun buildPlayStoreIntent(context: Context): Intent {
+        var appPackageName = context.getPackageName()
+        appPackageName = "com.yahoo.mobile.client.android.sportacular" //"com.google.android.apps.maps"
+
+        //return Intent()
+
+        return Intent(Intent.ACTION_VIEW).apply {
+            data = Uri.parse("https://play.google.com/store/apps/details?id=$appPackageName")
+
+            //data = Uri.parse("https://play.google.com/store/apps/details?id=${appPackageName}")
+            //setPackage("com.android.vending")
+        }
+
+        ///
+//            try {
+//                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$packageName")))
+//            } catch (e: ActivityNotFoundException) {
+//                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=$packageName")))
+//            }
+//            ///
+    }
+
+    fun openStore(context: Context, title: String, desc: String) {
+        val intent: Intent
+        if (true) {
+            var appPackageName = context.getPackageName()
+
+            appPackageName = "com.yahoo.mobile.client.android.sportacular" //"com.google.android.apps.maps"
+            intent = Intent(Intent.ACTION_VIEW).apply {
+                data = Uri.parse("https://play.google.com/store/apps/details?id=$appPackageName")
+                //data = Uri.parse("https://play.google.com/store/apps/details?id=${appPackageName}")
+
+                //setPackage("com.android.vending")
+
+            }
+            ///
+//            try {
+//                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$packageName")))
+//            } catch (e: ActivityNotFoundException) {
+//                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=$packageName")))
+//            }
+//            ///
+
+            val notificaionId = 1
+            val pIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_ONE_SHOT)
+            val bigTextNotiStyle: NotificationCompat.BigTextStyle? = null
+
+            val notificationManager: android.app.NotificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
+
+            val color: Int = ContextCompat.getColor(context, R.color.channel_1_color)
+
+            val builder: NotificationCompat.Builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                NotificationCompat.Builder(context, CHANNEL_ID_1)
+            } else {
+                NotificationCompat.Builder(context)
+            }
+
+            builder.setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle(title)
+                .setContentText(desc)
+                .setStyle(bigTextNotiStyle)
+                .setAutoCancel(true)
+                .setColor(color)
+                .setContentIntent(pIntent)
+                .setLights(Color.RED, 3000, 3000) as NotificationCompat.Builder
+            notificationManager.notify(notificaionId, builder.build())
+        }
+    }
+
+    fun isNotificationServiceEnabled_2(context: Context): Boolean {
+        val theList = Settings.Secure.getString(context.contentResolver, "enabled_notification_listeners")
+        val theListList = theList.split(":".toRegex()).toTypedArray()
+        val me: String = ComponentName(context, MyNotificationListener::class.java).flattenToString()
+        for (next in theListList) {
+            Log.i("+++", "+++ VerifyNotificationPermission(), me: $me, in enabled_notification_listeners: $next")
+            if (me == next) return true
+        }
+        return false
+    }
+
+    fun isNotificationServiceEnabled(context: Context): Boolean {
+        val flat = Settings.Secure.getString(context.contentResolver, "enabled_notification_listeners") //Manifest.permission.BIND_NOTIFICATION_LISTENER_SERVICE)
+        Log.e("+++", "+++ isNotificationServiceEnabled(), Settings.Secure.getString(contentResolver, Manifest.permission.BIND_NOTIFICATION_LISTENER_SERVICE): $flat")
+
+        if (!TextUtils.isEmpty(flat)) {
+            val names = flat.split(":".toRegex()).toTypedArray()
+            Log.i("+++", "+++ isNotificationServiceEnabled(), flat.split(\":\".toRegex()).toTypedArray(): ${names}")
+
+            for (i in names.indices) {
+                val cn = ComponentName.unflattenFromString(names[i])
+
+                Log.i("+++", "+++ ComponentName.unflattenFromString(names[$i]), packageNmae: ${cn?.packageName}, className: ${cn?.className}")
+                if (cn != null) {
+                    if (TextUtils.equals(packageName, cn.packageName)) {
+                        return true
+                    }
+                }
+            }
+        }
+        return false
+    }
+    // does not work
+    fun checkPermission(context: Context) {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.BIND_NOTIFICATION_LISTENER_SERVICE)
+            != PackageManager.PERMISSION_GRANTED) {
+            Log.d("+++", "+++ permission denied")
+        }
+        else {
+            Log.d("+++", "+++ permission granted")
+        }
     }
 
 }

@@ -3,5 +3,7 @@
     <item android:id="@+id/device_info"
         android:title="Device info" />
     <item android:id="@+id/notification_setting"
-        android:title="Ntification settings" />
+        android:title="Notification settings" />
+    <item android:id="@+id/notification_listener_permission"
+        android:title="Notification listener permission settings" />
 </menu>

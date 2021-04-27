@@ -165,6 +165,7 @@ class SimpleNotification : AppCompatActivity() {
         }
     }
 
+    val usingActivityToOpenPlayStore = false // does not work, backpress show blank screnn
 
     var notifyByClickCount = 0
     fun notifyByClick(view: View) {
@@ -181,9 +182,17 @@ class SimpleNotification : AppCompatActivity() {
                 NotificationManager.IMPORTANCE_HIGH, //NotificationManager.IMPORTANCE_LOW, //NotificationManager.IMPORTANCE_HIGH,
                 null
             )
+
+            val playtoreIntent = if (usingActivityToOpenPlayStore) {
+                Intent(this, OpenPlayStoreActivity::class.java).apply{
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK //or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                }
+            } else {
+                Utils.buildPlayStoreIntent(this)
+            }
             val notiItem = MyNotificationData(getNextNoitfyId(),
                 "title ${++notifyByClickCount}", "body: ${notifyByClickCount}", System.currentTimeMillis())
-            if (sendNotificationToUser(this@SimpleNotification, notiItem)) {
+            if (sendNotificationToUser(this@SimpleNotification, playtoreIntent, notiItem)) {
                 findViewById<TextView>(R.id.description)?.let {
                     blinkView(it, Html.fromHtml("<b><font color=\"#ff0000\">${notifyByClickCount} times</font></b> <i>posted to notification drawer</i>"))
                 }
@@ -236,7 +245,7 @@ class SimpleNotification : AppCompatActivity() {
                 }
                 val notiItem = MyNotificationData(getNextNoitfyId(),
                     "title ${i+1}", "body: ${i+1}", System.currentTimeMillis())
-                if (sendNotificationToUser(this@SimpleNotification, notiItem)) {
+                if (sendNotificationToUser(this@SimpleNotification, null, notiItem)) {
                     findViewById<TextView>(R.id.description)?.let {
                         blinkView(it, Html.fromHtml("<b><font color=\"#ff0000\">${i+1} times</font></b> <i>posted to notification drawer</i>"))
                     }
@@ -250,7 +259,7 @@ class SimpleNotification : AppCompatActivity() {
     }
 
 
-    private fun sendNotificationToUser(context: Context, notiItem: MyNotificationData): Boolean {
+    private fun sendNotificationToUser(context: Context, passInIntent: Intent?, notiItem: MyNotificationData): Boolean {
 
         //Check notification status
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -281,7 +290,7 @@ class SimpleNotification : AppCompatActivity() {
         val theBody = notiItem.body
 
         //Add the flags that will fire the user engagement event when it is opened.
-        val notificationIntent = Intent(context, SimpleNotification::class.java)
+        val notificationIntent = passInIntent ?: Intent(context, SimpleNotification::class.java)
         notificationIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
 //        notificationIntent.putExtra(SendNotificationActivity.MESSAGE_ID_KEY, id)
 //        notificationIntent.putExtra(SendNotificationActivity.MESSAGE_STRING_KEY, body)

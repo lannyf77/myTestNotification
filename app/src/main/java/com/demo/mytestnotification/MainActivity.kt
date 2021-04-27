@@ -1,12 +1,16 @@
 package com.demo.mytestnotification
 
+import android.Manifest
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.text.Html
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.Button
+import android.widget.EditText
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.demo.mytestnotification.Utils.getDeviceName
 
@@ -25,6 +29,17 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        findViewById<TextView>(R.id.txt)?.apply{
+            text = Html.fromHtml("permission: ${Manifest.permission.BIND_NOTIFICATION_LISTENER_SERVICE}" + if (Utils.isNotificationServiceEnabled(this@MainActivity)) {
+                "  <font color=\"#00ffff\">granted</font>."
+            } else {
+                "  <font color=\"#ff0000\">denied</font>."
+            })
+        }
+    }
+
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         val inflater = menuInflater
         inflater.inflate(R.menu.option_menu, menu)
@@ -40,6 +55,10 @@ class MainActivity : AppCompatActivity() {
             }
             R.id.notification_setting -> {
                 Utils.opnNotificationSettings(this, packageName)
+                true
+            }
+            R.id.notification_listener_permission -> {
+                startActivity(Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"))
                 true
             }
             else -> super.onOptionsItemSelected(item)

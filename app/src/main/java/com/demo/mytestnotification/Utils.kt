@@ -11,6 +11,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.pm.ResolveInfo
 import android.graphics.Color
 import android.graphics.Typeface
 import android.net.Uri
@@ -803,26 +804,65 @@ object Utils {
         }
     }
 
+    fun buildMarketIntent(context: Context, appId: String): Intent? {
+        var playstoreIntent = Intent(Intent.ACTION_VIEW,
+            Uri.parse("market://details?id=$appId"))
+        var marketFound = false
+        // find all applications able to handle our rateIntent
+        val otherApps: List<ResolveInfo> = context.getPackageManager().queryIntentActivities(playstoreIntent, 0)
+        for (otherApp in otherApps) {
+            Log.v("+++", "+++ buildMarketIntent(), otherApp.activityInfo.applicationInfo.packageName: ${otherApp.activityInfo.applicationInfo.packageName}")
+            // look for Google Play application
+            if (otherApp.activityInfo.applicationInfo.packageName == "com.android.vending") {
+                val otherAppActivity = otherApp.activityInfo
+                val componentName = ComponentName(
+                    otherAppActivity.applicationInfo.packageName,
+                    otherAppActivity.name
+                )
+                // make sure it does NOT open in the stack of your activity
+                playstoreIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                // task reparenting if needed
+                playstoreIntent.addFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
+                // if the Google Play was already open in a search result
+                //  this make sure it still go to the app page you requested
+                playstoreIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                // this make sure only the Google Play app is allowed to
+                // intercept the intent
+                playstoreIntent.component = componentName
+                marketFound = true
+                break
+            }
+        }
+        return if (marketFound) {
+            playstoreIntent
+        } else {
+            null
+        }.also {
+            Log.d("+++", "+++ --- exit buildMarketIntent(), ret: ${it}")
+        }
+    }
+
     fun buildPlayStoreIntent(context: Context): Intent {
         var appPackageName = context.getPackageName()
         appPackageName = "com.yahoo.mobile.client.android.sportacular" //"com.google.android.apps.maps"
 
-        //return Intent()
+        var intent = buildMarketIntent(context, appPackageName)
+        if (intent ==  null) {
+            intent = Intent(Intent.ACTION_VIEW).apply {
+                data = Uri.parse("https://play.google.com/store/apps/details?id=$appPackageName")
 
-        return Intent(Intent.ACTION_VIEW).apply {
-            data = Uri.parse("https://play.google.com/store/apps/details?id=$appPackageName")
-
-            //data = Uri.parse("https://play.google.com/store/apps/details?id=${appPackageName}")
-            //setPackage("com.android.vending")
+                //data = Uri.parse("https://play.google.com/store/apps/details?id=${appPackageName}")
+                //setPackage("com.android.vending")
+            }
         }
+        return intent
 
-        ///
-//            try {
-//                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$packageName")))
-//            } catch (e: ActivityNotFoundException) {
-//                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=$packageName")))
-//            }
-//            ///
+//        return Intent(Intent.ACTION_VIEW).apply {
+//            data = Uri.parse("https://play.google.com/store/apps/details?id=$appPackageName")
+//
+//            //data = Uri.parse("https://play.google.com/store/apps/details?id=${appPackageName}")
+//            //setPackage("com.android.vending")
+//        }
     }
 
     fun openStore(context: Context, title: String, desc: String) {

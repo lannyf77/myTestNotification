@@ -47,6 +47,10 @@ class MyNotificationListener : NotificationListenerService() {
 
     fun doPopup(sbn: StatusBarNotification?, action: String) {
 
+        return
+
+        ////////////////////////////////
+
         val notfExtraStr = bundleToString(sbn?.notification?.extras)
         Log.i("+++", "+++ @@@ doPopup() $action, notification.extras: $notfExtraStr")
 

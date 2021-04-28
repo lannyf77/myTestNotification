@@ -14,6 +14,7 @@ import android.widget.EditText
 import android.widget.RadioGroup
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.AppCompatCheckBox
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.widget.addTextChangedListener
@@ -165,7 +166,7 @@ class SimpleNotification : AppCompatActivity() {
         }
     }
 
-    val usingActivityToOpenPlayStore = false // does not work, backpress show blank screnn
+    var usingActivityToOpenPlayStore = false // does not work, backpress show blank screen
 
     var notifyByClickCount = 0
     fun notifyByClick(view: View) {
@@ -183,10 +184,10 @@ class SimpleNotification : AppCompatActivity() {
                 null
             )
 
+            usingActivityToOpenPlayStore = findViewById<AppCompatCheckBox>(R.id.open_playstore_in_activity)?.isChecked ?: false
+
             val playtoreIntent = if (usingActivityToOpenPlayStore) {
-                Intent(this, OpenPlayStoreActivity::class.java).apply{
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK //or Intent.FLAG_ACTIVITY_SINGLE_TOP
-                }
+                Intent(this, OpenPlayStoreActivity::class.java)
             } else {
                 Utils.buildPlayStoreIntent(this)
             }

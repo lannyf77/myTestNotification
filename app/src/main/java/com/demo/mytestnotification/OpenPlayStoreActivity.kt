@@ -1,6 +1,8 @@
 package com.demo.mytestnotification
 
+import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
@@ -12,16 +14,55 @@ class OpenPlayStoreActivity: AppCompatActivity() {
 
         Log.e("+++", "+++ OpenPlayStoreActivity::onCreate(), savedInstanceState== null: ${savedInstanceState == null}, getIntent(): ${getIntent()}")
 
-        val playtoreIntent = Utils.buildPlayStoreIntent(this)
-        startActivity(playtoreIntent);
-        //startActivityForResult(playtoreIntent, 888);
+        if (savedInstanceState != null) {//
+            finish()
+            return
+        }
+        openAppInPlayStore(this)
+
+//        val playtoreIntent = Utils.buildPlayStoreIntent(this).apply{
+//            flags = Intent.FLAG_ACTIVITY_NEW_TASK //or Intent.FLAG_ACTIVITY_SINGLE_TOP
+//        }
+//        startActivity(playtoreIntent)
     }
 
-//    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-//        super.onActivityResult(requestCode, resultCode, data)
-//        Log.e("+++", "+++ OpenPlayStoreActivity:onActivityResult(),requestCode : $requestCode, resultCode: $resultCode, data: $data")
-//        finish()
-//    }
+    fun openAppInPlayStore(context: Context) {
+        // you can also use BuildConfig.APPLICATION_ID
+        var appId: String = context.getPackageName()
+
+        ///
+        appId = "com.yahoo.mobile.client.android.sportacular"
+        ///
+
+        Log.e("+++", "+++ enter openAppInPlayStore()")
+
+        val playstoreWebIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=$appId"))
+
+        // find all applications able to handle our rateIntent
+        var playstoreIntent = Utils.buildMarketIntent(context, appId)
+        if (playstoreIntent != null) {
+            try {
+                //startActivity(playstoreIntent)
+                startActivityForResult(playstoreIntent, 0)
+            } catch (e: Throwable) {
+                Log.e("+++", "+++ !!! exp in openAppInPlayStore(), ${e.message}")
+                //context.startActivity(playstoreWebIntent)
+                startActivityForResult(playstoreWebIntent, 0)
+            }
+        } else {
+            // if GP not present on device, open web browser
+            //context.startActivity(playstoreWebIntent)
+            startActivityForResult(playstoreWebIntent, 0)
+        }
+        Log.e("+++", "+++ --- exit openAppInPlayStore()")
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        Log.e("+++", "+++ OpenPlayStoreActivity:onActivityResult(),requestCode : $requestCode, resultCode: $resultCode, data: $data")
+        finish()
+    }
+
 
     override fun onBackPressed() {
         Log.e("+++", "+++ OpenPlayStoreActivity:onBackPressed()")

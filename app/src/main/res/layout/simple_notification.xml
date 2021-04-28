@@ -231,6 +231,13 @@
             android:onClick="notifyByClick"
             />
 
+        <androidx.appcompat.widget.AppCompatCheckBox
+            android:id="@+id/open_playstore_in_activity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="open play store in other activity"
+            android:checked="false" />
+
     </androidx.appcompat.widget.LinearLayoutCompat>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

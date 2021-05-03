@@ -42,7 +42,7 @@ class SimpleNotification : AppCompatActivity() {
     var adapterNotificationDataList = arrayListOf<MyNotificationData>()
 
     init {
-        Log.i("+++", "+++ SimpleNotification::init{}, $this")
+        Log.i("+++", "+++ SimpleNotification::init{} cancelAll notification when start SimpleNotification activity, $this")
         NotificationManagerCompat.from(Utils.appContext).cancelAll()
         deleteAllNotificationGroups()
     }
@@ -90,7 +90,8 @@ class SimpleNotification : AppCompatActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        Log.i("+++", "+++ +++ onNewIntent($intent), $this")
+        val extraEEE = intent.getStringExtra("eee888") ?: "- not find key eee888 -"
+        Log.i("+++", "+++ +++ onNewIntent(), intent.getStringExtra(\"eee888\"): ${extraEEE} intent.hash; ${intent.hashCode()}, ($intent), $this")
         updateActivNotifsInRV()
     }
 
@@ -300,7 +301,18 @@ class SimpleNotification : AppCompatActivity() {
 //        // Attach Notification Title with specific key (for Ex: MESSAGE_TITLE) in intent for Logging Shadowfax Analytics
 //        notificationIntent.putExtra(SendNotificationActivity.MESSAGE_TITLE, title)
 
-        val pendingIntent = PendingIntent.getActivity(context, 1, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+        ///
+        notificationIntent.putExtra("eee888", "${notiItem.id}, ${notiItem.title} - ${notiItem.body}, int.hash: ${notificationIntent.hashCode()}")
+        ///
+        // if post 1, 2 ,3. and in SimpleNotification:onNewIntent() all three got last intent's extra (the 1, 2 got override)
+        //val pendingIntent = PendingIntent.getActivity(context, 1, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+
+        // if post 1, 2 ,3. and in SimpleNotification:onNewIntent() only 3rd one has intent deliever to it,  (the 1, 2 got lost)
+        //val pendingIntent = PendingIntent.getActivity(context, 1, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT)
+
+        // if post 1, 2 ,3. and in SimpleNotification:onNewIntent(), all 3 are correctly got.
+        val pendingIntent = PendingIntent.getActivity(context, System.currentTimeMillis().toInt(), notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT)
+
 
         builder
             .setSmallIcon(R.drawable.ic_one)   //.setSmallIcon(R.mipmap.ic_launcher_round)
@@ -311,17 +323,26 @@ class SimpleNotification : AppCompatActivity() {
 
         builder.setAutoCancel(true)
 
+        val newNotification = builder.build()
+        ///
+        // test data
+        newNotification.extras.putString("COSTOM_DATA_KEY", "ee888-theId:$theId")
+
+        val str = Utils.bundleToString(newNotification.extras)
+        Log.w("+++", "+++ @@@ notification -id: $theId, (notification.hash) to be posted: ${newNotification.hashCode()}, pendingIntent.hash: ${pendingIntent.hashCode()}extras: ${str}")
+        ///
+
         maxActiveNoticicationAllowd = findViewById<EditText>(R.id.max_active_notification_count)?.text?.toString()?.toInt() ?: 5
         when(findViewById<RadioGroup>(R.id.typeSelectorRadioGroup)?.checkedRadioButtonId){
             R.id.strategy_purge -> {
-                notifyWithPurgeLatestFirst(context, theId, builder.build())
+                notifyWithPurgeLatestFirst(context, theId, newNotification)
             }
             R.id.strategy_replace -> {
-                notifyWithReplaceLatestFirst(context, theId, builder.build())
+                notifyWithReplaceLatestFirst(context, theId, newNotification)
             }
             else -> {
                 val notificationManager = NotificationManagerCompat.from(context)
-                notificationManager.notify(theId, builder.build())
+                notificationManager.notify(theId, newNotification)
             }
         }
 

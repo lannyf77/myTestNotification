@@ -111,6 +111,11 @@ object Utils {
         for (i in activeNotifications!!.indices) {
             val activeNotification = activeNotifications[i]
             val notification: Notification = activeNotification.notification
+
+            val notfExtraStr = bundleToString(notification.extras)
+            Log.v("+++", "+++ @@@ active notify[$i] -id: ${activeNotification.id}, notification.hash: ${notification?.hashCode()}, notification.extras: $notfExtraStr")
+
+
             val title: String = notification.extras.getString(
                 EXTRA_TITLE,
                 "no found by key $EXTRA_TITLE"
@@ -230,7 +235,7 @@ object Utils {
                     //printoutNotication(notification, activeNotification, channelId_groupId, i)
 
                     val notfExtraStr = bundleToString(notification.extras)
-                    //Log.i("+++", "+++ [$i]: notification.extras: $notfExtraStr")
+                    Log.i("+++", "+++ [$i]: notification.extras: $notfExtraStr")
                     Log.d(
                         "+++", "+++ @@@ [" + i + "]: id: " + activeNotification.id +
                         ", tag:" + activeNotification.tag +
@@ -557,8 +562,9 @@ object Utils {
     fun bundleToString(bundle: Bundle?): String {
         val body = StringBuilder()
         if (bundle != null) {
+            body.append("bundle.hash:${bundle.hashCode()}\n")
             for (key in bundle.keySet()) {
-                val value = bundle[key]
+                val value = bundle[key] ?: ""
                 body.append(key).append("=").append(value.toString()).append("\n")
             }
         }
@@ -804,9 +810,9 @@ object Utils {
         }
     }
 
+    // https://developer.android.com/training/notify-user/navigation.html?utm_campaign=android_series_tasks_back_stack_051216&utm_source=medium&utm_medium=blog#ExtendedNotification
     fun buildMarketIntent(context: Context, appId: String): Intent? {
-        var playstoreIntent = Intent(Intent.ACTION_VIEW,
-            Uri.parse("market://details?id=$appId"))
+        var playstoreIntent = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$appId"))
         var marketFound = false
         // find all applications able to handle our rateIntent
         val otherApps: List<ResolveInfo> = context.getPackageManager().queryIntentActivities(playstoreIntent, 0)
@@ -850,6 +856,7 @@ object Utils {
         if (intent ==  null) {
             intent = Intent(Intent.ACTION_VIEW).apply {
                 data = Uri.parse("https://play.google.com/store/apps/details?id=$appPackageName")
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
 
                 //data = Uri.parse("https://play.google.com/store/apps/details?id=${appPackageName}")
                 //setPackage("com.android.vending")

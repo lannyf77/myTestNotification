@@ -47,12 +47,12 @@ class MyNotificationListener : NotificationListenerService() {
 
     fun doPopup(sbn: StatusBarNotification?, action: String) {
 
-        return
-
-        ////////////////////////////////
 
         val notfExtraStr = bundleToString(sbn?.notification?.extras)
-        Log.i("+++", "+++ @@@ doPopup() $action, notification.extras: $notfExtraStr")
+        Log.i("+++", "+++ @@@ notify-listener, $action, doPopup(), notif-id: ${sbn?.id},  sbn?.notification.hash: ${sbn?.notification?.hashCode()}, notification.extras: $notfExtraStr")
+
+        return
+        ////////////////////////////////
 
         Handler(Looper.getMainLooper()).postDelayed({
             sbn?.notification?.let { notif ->

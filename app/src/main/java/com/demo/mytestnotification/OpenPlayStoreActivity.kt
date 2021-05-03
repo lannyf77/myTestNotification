@@ -37,6 +37,9 @@ class OpenPlayStoreActivity: AppCompatActivity() {
         Log.e("+++", "+++ enter openAppInPlayStore()")
 
         val playstoreWebIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=$appId"))
+            .apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
 
         // find all applications able to handle our rateIntent
         var playstoreIntent = Utils.buildMarketIntent(context, appId)

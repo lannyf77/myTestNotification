@@ -1,12 +1,7 @@
 package com.demo.mytestnotification
 
 import android.Manifest
-import android.app.Activity
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationChannelGroup
-import android.app.NotificationManager
-import android.app.PendingIntent
+import android.app.*
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -19,11 +14,7 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.service.notification.StatusBarNotification
-import android.text.Spannable
-import android.text.SpannableString
-import android.text.SpannableStringBuilder
-import android.text.Spanned
-import android.text.TextUtils
+import android.text.*
 import android.text.style.StyleSpan
 import android.util.Log
 import android.view.animation.AlphaAnimation
@@ -36,6 +27,12 @@ import androidx.core.app.NotificationCompat.EXTRA_TITLE
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.core.text.bold
+import com.google.android.gms.ads.identifier.AdvertisingIdClient
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.GoogleApiAvailabilityLight
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException
+import com.google.android.gms.common.GooglePlayServicesRepairableException
+import java.io.IOException
 import java.security.SecureRandom
 import java.util.*
 import kotlin.Comparator
@@ -606,7 +603,7 @@ object Utils {
         name: String,
         descriptionText: String,
         importance: Int,
-        groupId: String? = null
+        groupId: String? = null,
     ) {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             val notificationManager = NotificationManagerCompat.from(Utils.appContext)
@@ -751,7 +748,7 @@ object Utils {
             }
             else -> {
                 spStrBuilder.append("$spaceStr$pathStr: {<br>")
-                buildOnePathSb(deepth+1, lastValue, spStrBuilder)
+                buildOnePathSb(deepth + 1, lastValue, spStrBuilder)
                 spStrBuilder.append("<br>$spaceStr}")
             }
         }
@@ -960,6 +957,14 @@ object Utils {
         else {
             Log.d("+++", "+++ permission granted")
         }
+    }
+
+    @Throws(GooglePlayServicesNotAvailableException::class, IOException::class, GooglePlayServicesRepairableException::class)
+    private fun getAdsClientInfo(context: Context): AdvertisingIdClient.Info? {
+        val isGPAvailable: Int = GoogleApiAvailabilityLight.getInstance().isGooglePlayServicesAvailable(context)
+        return if (isGPAvailable == ConnectionResult.SUCCESS) {
+            AdvertisingIdClient.getAdvertisingIdInfo(context)
+        } else null
     }
 
 }

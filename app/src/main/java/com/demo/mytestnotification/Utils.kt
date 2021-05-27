@@ -1,7 +1,12 @@
 package com.demo.mytestnotification
 
 import android.Manifest
-import android.app.*
+import android.app.Activity
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationChannelGroup
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -14,7 +19,11 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.service.notification.StatusBarNotification
-import android.text.*
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.SpannableStringBuilder
+import android.text.Spanned
+import android.text.TextUtils
 import android.text.style.StyleSpan
 import android.util.Log
 import android.view.animation.AlphaAnimation
@@ -521,6 +530,9 @@ object Utils {
             intent.data = Uri.parse("package:$packageName")
             context.startActivity(intent)
         }
+        val ntfEnabled = Utils.currentNotificationsPermission(context)
+        Log.e("+++", "+++ opnNotificationSettings(), ntfEnabled:"+ntfEnabled)
+
     }
 
     fun blinkView(v: TextView, txt: Spanned) {
@@ -965,6 +977,29 @@ object Utils {
         return if (isGPAvailable == ConnectionResult.SUCCESS) {
             AdvertisingIdClient.getAdvertisingIdInfo(context)
         } else null
+    }
+
+    fun currentNotificationsPermission(context: Context): Boolean {
+        var overallPermission: Boolean
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val nm = NotificationManagerCompat.from(context)
+            overallPermission = nm.areNotificationsEnabled()
+            val channels = nm.notificationChannels
+            var someChannelEnabled = !(channels != null && !channels.isEmpty())
+            if (channels != null && !channels.isEmpty()) {
+                for (channel in channels) {
+                    Log.v("+++", "+++ channel: channel.getImportance():" + channel.importance + ", OTHERS:" + channel.toString())
+                    if (channel.importance != NotificationManagerCompat.IMPORTANCE_NONE) {
+                        someChannelEnabled = true
+                    }
+                }
+            }
+            overallPermission = overallPermission && someChannelEnabled
+        } else {
+            overallPermission = NotificationManagerCompat.from(context).areNotificationsEnabled()
+        }
+        Log.i("+++", "+++ currentNotificationsPermission(), ret:$overallPermission")
+        return overallPermission
     }
 
 }
